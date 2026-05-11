@@ -1,0 +1,17 @@
+{
+    "name": "Unity.io.justtrack.justtrack-unity-sdk.Editor",
+    "references": [
+        "GUID:7ef2527962766889bb3c7cd21f730452"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

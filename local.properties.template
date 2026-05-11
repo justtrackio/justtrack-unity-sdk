@@ -1,0 +1,47 @@
+# JustTrack SDK credentials
+
+# TestApp tokens
+JUSTTRACK_TESTAPP_ANDROID_TOKEN=
+JUSTTRACK_TESTAPP_IOS_TOKEN=
+JUSTTRACK_TESTAPP_WEBGL_TOKEN=
+
+# JustTrackSDK_Wrapper tokens
+JUSTTRACK_WRAPPER_ANDROID_TOKEN=
+JUSTTRACK_WRAPPER_IOS_TOKEN=
+
+# Firebase configuration (TestApp)
+# Copy your Firebase files directly to:
+#   - TestApp/Assets/google-services.json
+#   - TestApp/Assets/GoogleService-Info.plist
+
+# Google AdMob Test-IDs (official Google test account)
+ADMOB_ANDROID_APP_ID=
+ADMOB_IOS_APP_ID=
+
+# AppLovin SDK Key
+APPLOVIN_SDK_KEY=
+
+# IronSource configuration
+IRONSOURCE_ANDROID_APP_KEY=
+IRONSOURCE_IOS_APP_KEY=
+
+# Unity Ads configuration
+UNITY_ADS_ANDROID_GAME_ID=
+UNITY_ADS_IOS_GAME_ID=
+
+# JustTrack Mediation User ID
+JUSTTRACK_MEDIATION_USER_ID=
+
+# Firebase App Instance ID (for testing)
+FIREBASE_APP_INSTANCE_ID=
+
+# Google Ads Ad Unit IDs
+GOOGLE_ADS_IOS_BANNER_ID=
+GOOGLE_ADS_IOS_INTERSTITIAL_ID=
+GOOGLE_ADS_IOS_REWARDED_ID=
+GOOGLE_ADS_ANDROID_BANNER_ID=
+GOOGLE_ADS_ANDROID_INTERSTITIAL_ID=
+GOOGLE_ADS_ANDROID_REWARDED_ID=
+
+# Sandbox environment root domain
+JUSTTRACK_SANDBOX_ROOT=

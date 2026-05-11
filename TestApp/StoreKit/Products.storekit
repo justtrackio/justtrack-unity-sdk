@@ -1,0 +1,149 @@
+{
+  "identifier" : "A1B2C3D4-0000-0000-0000-000000000001",
+  "nonRenewingSubscriptions" : [
+  ],
+  "products" : [
+    {
+      "displayPrice" : "0.99",
+      "familyShareable" : false,
+      "internalID" : "A1B2C3D4-0000-0000-0000-000000000101",
+      "localizations" : [
+        {
+          "description" : "Consumable test product for local IAP testing.",
+          "displayName" : "Consumable Test Product",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "consumable_purchase",
+      "referenceName" : "Consumable Test Product",
+      "type" : "Consumable"
+    },
+    {
+      "displayPrice" : "1.99",
+      "familyShareable" : false,
+      "internalID" : "A1B2C3D4-0000-0000-0000-000000000102",
+      "localizations" : [
+        {
+          "description" : "Non-consumable test product for local IAP testing.",
+          "displayName" : "Non-Consumable Test Product",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "non_consumable_purchase",
+      "referenceName" : "Non-Consumable Test Product",
+      "type" : "NonConsumable"
+    },
+    {
+      "displayPrice" : "2.99",
+      "familyShareable" : false,
+      "internalID" : "A1B2C3D4-0000-0000-0000-000000000103",
+      "localizations" : [
+        {
+          "description" : "Non-renewing subscription test product for local IAP testing.",
+          "displayName" : "Non-Renewing Test Subscription",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "non_renewing_subscription",
+      "referenceName" : "Non-Renewing Test Subscription",
+      "type" : "NonConsumable"
+    }
+  ],
+  "settings" : {
+    "_applicationInternalID" : "0000000000",
+    "_developerTeamID" : "",
+    "_failTransactionsEnabled" : false,
+    "_lastSynchronizedDate" : 0,
+    "_locale" : "en_US",
+    "_storefront" : "USA",
+    "_storeKitErrors" : [
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Load Products"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Purchase"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Verification"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "App Store Sync"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Subscription Status"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "App Transaction"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Manage Subscriptions Sheet"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Refund Request Sheet"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Offer Code Redeem Sheet"
+      }
+    ]
+  },
+  "subscriptionGroups" : [
+    {
+      "id" : "A1B2C3D4-0000-0000-0000-000000000201",
+      "localizations" : [
+        {
+          "description" : "Test subscription group for local IAP testing.",
+          "displayName" : "Test Subscription Group",
+          "locale" : "en_US"
+        }
+      ],
+      "name" : "Test Subscription Group",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [
+          ],
+          "codeOffers" : [
+          ],
+          "displayPrice" : "4.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "A1B2C3D4-0000-0000-0000-000000000301",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Auto-renewable subscription test product for local IAP testing.",
+              "displayName" : "Auto-Renewable Test Subscription",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "auto_renewable_subscription",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "Auto-Renewable Test Subscription",
+          "subscriptionGroupID" : "A1B2C3D4-0000-0000-0000-000000000201",
+          "type" : "RecurringSubscription"
+        }
+      ]
+    }
+  ],
+  "version" : {
+    "major" : 3,
+    "minor" : 0
+  }
+}

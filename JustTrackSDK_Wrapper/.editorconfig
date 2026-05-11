@@ -1,0 +1,55 @@
+# EditorConfig for JustTrackSDK
+# https://editorconfig.org
+
+root = true
+
+[*.cs]
+# Disable controversial StyleCop rules
+
+# SA1200: Using directive should appear within a namespace declaration
+# Rationale: Keeping usings at the top of the file is common practice
+dotnet_diagnostic.SA1200.severity = none
+
+# SA1633: The file header is missing or not located at the top of the file
+# Rationale: Not all projects require copyright headers
+dotnet_diagnostic.SA1633.severity = none
+
+# SA1101: Prefix local calls with this
+# Rationale: Verbose and reduces readability without benefit
+dotnet_diagnostic.SA1101.severity = none
+
+# SA1602: Enumeration items should be documented
+# Rationale: Often self-explanatory, documentation would be redundant
+dotnet_diagnostic.SA1602.severity = none
+
+# SA1402: File may only contain a single type
+# Rationale: Related types can be kept together
+dotnet_diagnostic.SA1402.severity = none
+
+# SA1649: File name should match first type name
+# Rationale: Not always applicable with multiple types per file
+dotnet_diagnostic.SA1649.severity = none
+
+# SA1311: Static readonly fields should begin with upper-case letter
+# Rationale: Logger fields etc. commonly use camelCase
+dotnet_diagnostic.SA1311.severity = none
+
+# SA1118: The parameter spans multiple lines
+# Rationale: Multi-line verbatim strings as parameters are acceptable
+dotnet_diagnostic.SA1118.severity = none
+
+# SA1011: Closing square bracket should be followed by a space
+# Rationale: Conflicts with nullable array syntax (string[]?)
+dotnet_diagnostic.SA1011.severity = none
+
+# SA1201: Elements should appear in the correct order
+# Rationale: Reorganizing existing code would be too disruptive
+dotnet_diagnostic.SA1201.severity = none
+
+# SA1202: Elements should be ordered by access
+# Rationale: Reorganizing existing code would be too disruptive
+dotnet_diagnostic.SA1202.severity = none
+
+# SA1214: Readonly fields should appear before non-readonly fields
+# Rationale: Reorganizing existing code would be too disruptive
+dotnet_diagnostic.SA1214.severity = none

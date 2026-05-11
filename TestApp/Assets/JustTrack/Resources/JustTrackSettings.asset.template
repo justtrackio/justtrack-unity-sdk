@@ -1,0 +1,44 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1af9264a50d2d182d83b6ed47c4d7a27, type: 3}
+  m_Name: JustTrackSettings
+  m_EditorClassIdentifier:
+  manualStart: 0
+  alwaysUpdateInjectedCode: 1
+  ignoreFirebaseIntegration: 0
+  androidApiToken: ${JUSTTRACK_TESTAPP_ANDROID_TOKEN}
+  iosApiToken: ${JUSTTRACK_TESTAPP_IOS_TOKEN}
+  webglApiToken: ${JUSTTRACK_TESTAPP_WEBGL_TOKEN}
+  webglBundleId: io.justtrack.app
+  webglAppVersion: 6.6.0
+  webglAppCode: 666
+  webglUserId:
+  webglManualStart: 0
+  webglEnableConsoleLogging: 1
+  androidAppLovinIntegration: 1
+  iosAppLovinIntegration: 1
+  androidUnityAdsIntegration: 1
+  iosUnityAdsIntegration: 1
+  androidIronSourceIntegration: 1
+  iosIronSourceIntegration: 1
+  iosTrackingSettings:
+    requestTrackingPermission: 0
+    useCustomAdvertisingAttributionReportEndpoint: 0
+    trackingPermissionDescription: We use your data to provide personalized advertisements.
+    trackingPermissionDescriptionManaged: 0
+    facebookAudienceNetworkIntegration: 0
+  iosDisableAutomaticInAppPurchaseTracking: 0
+  androidDisableAutomaticInAppPurchaseTracking: 1
+  androidFirebaseIntegration: 0
+  iosFirebaseIntegration: 0
+  enableDebugMode: 0
+  enableConsoleLogging: 0

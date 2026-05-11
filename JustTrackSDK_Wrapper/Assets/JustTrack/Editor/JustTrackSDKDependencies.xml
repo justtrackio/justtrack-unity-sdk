@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<dependencies>
+  <androidPackages>
+    <androidPackage spec="io.justtrack:justtrack-android-sdk-no-dependencies:[7.1.0]">
+      <repositories>
+        <repository>https://sdk.justtrack.io/maven</repository>
+      </repositories>
+    </androidPackage>
+  </androidPackages>
+  <iosPods>
+    <iosPod name="JustTrackSDK" version="7.1.0">
+      <sources></sources>
+    </iosPod>
+  </iosPods>
+</dependencies>

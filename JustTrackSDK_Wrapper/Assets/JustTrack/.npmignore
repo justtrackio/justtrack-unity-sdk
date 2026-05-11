@@ -1,0 +1,14 @@
+# Ignore the settings from the test game
+/Resources/JustTrackSettings.asset*
+/Resources/JustTrackSettings.meta*
+/Resources/JustTrackBuildSettings.asset*
+/Resources/JustTrackBuildSettings.meta*
+/Resources.meta*
+
+# Ignore files created by "npm pack"
+*.tgz
+*.tgz.meta
+
+# Ignore the config file we generate inside the actual game
+Editor/JustTrackSDKNativeDependencies.xml
+Editor/JustTrackSDKNativeDependencies.xml.meta

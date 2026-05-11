@@ -1,0 +1,26 @@
+{
+    "android" : {
+        "unity" : [
+            {
+                "thirdpartyVersionRequirement" : null,
+                "version" : "1.+"
+            }
+        ],
+        "applovin" : [
+            {
+                "thirdpartyVersionRequirement" : "13.0.0",
+                "version" : "2.+"
+            },
+            {
+                "thirdpartyVersionRequirement" : null,
+                "version" : "1.+"
+            }
+        ],
+        "firebase" : [
+            {
+                "thirdpartyVersionRequirement" : null,
+                "version" : "1.+"
+            }
+        ]
+    }    
+}
