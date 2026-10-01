@@ -13,15 +13,16 @@ namespace JustTrack
         /// </summary>
         internal static List<Dependency> Dependencies { get; } = new List<Dependency>
         {
-            new Dependency("com.google.android.play", "integrity", "1.4.0", "2.0"),
-            new Dependency("androidx.lifecycle", "lifecycle-process", "2.1.0", "2.7"),
-            new Dependency("com.google.android.gms", "play-services-ads-identifier", "16.0.0", "19.0"),
-            new Dependency("com.google.android.gms", "play-services-appset", "16.0.0", "17.0"),
-            new Dependency("org.jetbrains.kotlinx", "kotlinx-coroutines-android", "1.5.0", "1.9.0"),
-            new Dependency("org.jetbrains.kotlin", "kotlin-stdlib-jdk7", "1.8.21", null),
-            new Dependency("org.jetbrains.kotlin", "kotlin-stdlib", "1.9.25", null),
-            new Dependency("org.jetbrains.kotlin", "kotlin-stdlib-jdk8", "1.8.21", "2.0.20"),
-            new Dependency("org.jetbrains", "annotations", "13.0", null),
+            new Dependency("com.google.android.play", "integrity", "1.4.0"),
+            new Dependency("androidx.lifecycle", "lifecycle-process", "2.1.0"),
+            new Dependency("com.google.android.gms", "play-services-ads-identifier", "16.0.0"),
+            new Dependency("com.google.android.gms", "play-services-appset", "16.0.0"),
+            new Dependency("org.jetbrains.kotlinx", "kotlinx-coroutines-android", "1.9.0"),
+            new Dependency("io.justtrack", "integrity", "1.0.1"),
+            new Dependency("org.jetbrains.kotlin", "kotlin-stdlib-jdk7", "1.8.21"),
+            new Dependency("org.jetbrains.kotlin", "kotlin-stdlib", "1.9.25"),
+            new Dependency("org.jetbrains.kotlin", "kotlin-stdlib-jdk8", "1.8.21"),
+            new Dependency("org.jetbrains", "annotations", "13.0"),
         };
 
         /// <summary>
@@ -45,23 +46,16 @@ namespace JustTrack
             internal string Version { get; }
 
             /// <summary>
-            /// Gets the upper bound version of the dependency, if any.
-            /// </summary>
-            internal string? UpperBoundVersion { get; }
-
-            /// <summary>
             /// Initializes a new instance of the <see cref="Dependency"/> class.
             /// </summary>
             /// <param name="pGroupId">The group ID of the dependency.</param>
             /// <param name="pArtifactId">The artifact ID of the dependency.</param>
             /// <param name="pVersion">The version of the dependency.</param>
-            /// <param name="pUpperBoundVersion">The upper bound version of the dependency, or null if no upper bound.</param>
-            internal Dependency(string pGroupId, string pArtifactId, string pVersion, string? pUpperBoundVersion)
+            internal Dependency(string pGroupId, string pArtifactId, string pVersion)
             {
                 this.GroupId = pGroupId;
                 this.ArtifactId = pArtifactId;
                 this.Version = pVersion;
-                this.UpperBoundVersion = pUpperBoundVersion;
             }
         }
     }

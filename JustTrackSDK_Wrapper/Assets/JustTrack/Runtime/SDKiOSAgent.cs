@@ -19,7 +19,6 @@ namespace JustTrack
         public class iOSAttributionResponse
         {
             public string userType = "";
-            public string type = "";
             public string campaignId = "";
             public string campaignName = "";
             public string campaignType = "";
@@ -56,21 +55,6 @@ namespace JustTrack
         {
             public iOSRetargetingParameter[] parameters = new iOSRetargetingParameter[]{};
         }
-
-        [Serializable]
-        private class iOSAssignmentItem
-        {
-            public string ConfigKey = "";
-            public string ConfigValue = "";
-            public string ExperimentId = "";
-        }
-
-        [Serializable]
-        private class iOSAssignmentList
-        {
-            public iOSAssignmentItem[] items = new iOSAssignmentItem[]{};
-        }
-
 
         [Serializable]
         public class iOSPreliminaryRetargetingParameters
@@ -110,26 +94,19 @@ namespace JustTrack
             string? pTrackingProvider,
             string? pCustomUserId,
             bool pAutomaticInAppPurchaseTracking,
-            bool pEnableDebugMode,
             bool pManualStart,
             bool pEnableConsoleLogging,
-            Action<AttributionResponse> pOnSuccess,
-            Action<string> pOnFailure)
+            bool pEnableConnectionTracking,
+            string? pServerUrl,
+            string? pBundleId,
+            string? pAppVersion,
+            string? pAppCode)
         {
-            Action<string> onSuccess = (attribution) => {
-                var response = parseAttributionResponse(attribution);
+            string customBundleId = pBundleId ?? "";
+            string customAppVersion = pAppVersion ?? "";
+            string customAppCode = pAppCode ?? "";
 
-                JustTrackSDKBehaviour.CallOnMainThread(() => {
-                    pOnSuccess(response);
-                });
-            };
-
-            var settings = JustTrackSettings.LoadFromResources();
-            string customBundleId = settings?.IosBundleId ?? "";
-            string customAppVersion = settings?.IosAppVersion ?? "";
-            string customAppCode = settings?.IosAppCode ?? "";
-
-            string? serverUrl = settings?.ServerUrl;
+            string? serverUrl = pServerUrl;
 
             JustTrackSDKNativeBridgeUnity.Instance.Init(
                 pApiKey,
@@ -139,6 +116,7 @@ namespace JustTrack
                 pAutomaticInAppPurchaseTracking,
                 pManualStart,
                 pEnableConsoleLogging,
+                pEnableConnectionTracking,
                 customBundleId,
                 customAppVersion,
                 customAppCode,
@@ -147,20 +125,17 @@ namespace JustTrack
                 {
                     iOSUserData userData = JsonUtility.FromJson<iOSUserData>(onInitializedJson);
                     installInstanceId = userData.installInstanceId;
-                },
-                onSuccess,
-                pOnFailure);
+                });
 
             initialized = true;
         }
 
-        private AttributionResponse parseAttributionResponse(string attribution)
+        private AttributionResponse ParseAttributionResponse(string attribution)
         {
                 iOSAttributionResponse parsed = JsonUtility.FromJson<iOSAttributionResponse>(attribution);
 
                 var userType = parsed.userType;
-                var type = parsed.type;
-                var campaignIdString = parsed.campaignId;
+                var campaignId = parsed.campaignId;
                 var campaignName = parsed.campaignName;
                 var campaignType = parsed.campaignType;
                 var channelIdString = parsed.channelId;
@@ -174,13 +149,22 @@ namespace JustTrack
                 var adsetId = parsed.adsetId;
                 var createdAtString = parsed.createdAt;
 
-                int campaignId = int.Parse(campaignIdString);
                 int channelId = int.Parse(channelIdString);
                 bool channelIncent = channelIncentString == "true";
                 int partnerId = int.Parse(partnerIdString);
                 CultureInfo provider = CultureInfo.InvariantCulture;
                 DateTime createdAt = DateTime.ParseExact(createdAtString, "yyyy-MM-dd'T'HH:mm:ssK", provider);
-                return AttributionResponse.CreateResponse(userType, type, campaignId, campaignName, campaignType, channelId, channelName, channelIncent, partnerId, partnerName, sourceId, sourceBundleId, sourcePlacement, adsetId, createdAt);
+                return AttributionResponse.CreateResponse(userType, campaignId, campaignName, campaignType, channelId, channelName, channelIncent, partnerId, partnerName, sourceId, sourceBundleId, sourcePlacement, adsetId, createdAt);
+        }
+
+        public void GetAttribution(Action<AttributionResponse> pOnSuccess, Action<string> pOnFailure)
+        {
+            Action<string> onSuccess = (attribution) =>
+            {
+                var response = ParseAttributionResponse(attribution);
+                JustTrackSDKBehaviour.CallOnMainThread(() => pOnSuccess(response));
+            };
+            JustTrackSDKNativeBridgeUnity.Instance.GetAttribution(onSuccess, pOnFailure);
         }
 
         public void Start()
@@ -338,7 +322,7 @@ namespace JustTrack
 
         internal void OnAttributionListenerReceived(string response)
         {
-            var attribution = parseAttributionResponse(response);
+            var attribution = ParseAttributionResponse(response);
 
             Action<AttributionResponse>? localCallback = null;
             lock(this)
@@ -402,7 +386,7 @@ namespace JustTrack
             iOSPreliminaryRetargetingParametersValidateResult parsed = JsonUtility.FromJson<iOSPreliminaryRetargetingParametersValidateResult>(response);
 
             var preliminaryId = parsed.preliminaryId;
-            var attribution = parseAttributionResponse(parsed.response);
+            var attribution = ParseAttributionResponse(parsed.response);
             var parameters = parsed.parameters == null ? null : parseRetargetingParameters(parsed.parameters);
             var validateResult = ValidateResult.CreateValidateResult(parameters, attribution);
 
@@ -494,6 +478,21 @@ namespace JustTrack
             JustTrackSDKNativeBridgeUnity.Instance.SetFirebaseAppInstanceId(pFirebaseAppInstanceId);
         }
 
+        public void SetGlobalDimension0(string? value)
+        {
+            JustTrackSDKNativeBridgeUnity.Instance.SetGlobalDimension0(value);
+        }
+
+        public void SetGlobalDimension1(string? value)
+        {
+            JustTrackSDKNativeBridgeUnity.Instance.SetGlobalDimension1(value);
+        }
+
+        public void SetGlobalDimension2(string? value)
+        {
+            JustTrackSDKNativeBridgeUnity.Instance.SetGlobalDimension2(value);
+        }
+
         public void PublishEvent(AppEvent pEvent, Action? pOnSuccess, Action<string>? pOnFailure)
         {
             JustTrackSDKNativeBridgeUnity.Instance.PublishEvent(pEvent, pOnSuccess, pOnFailure);
@@ -521,14 +520,6 @@ namespace JustTrack
                 {
                     pOnFailure(error);
                 });
-            });
-        }
-
-        public void GetTestGroupId(Action<int?> pOnSuccess, Action<string> pOnFailure)
-        {
-            JustTrackSDKBehaviour.CallOnMainThread(() =>
-            {
-                pOnSuccess(JustTrackSDKNativeBridgeUnity.Instance.GetTestGroupId());
             });
         }
 
@@ -600,29 +591,7 @@ namespace JustTrack
         public Assignment[] GetAllAssignments()
         {
             string? assignmentsJson = JustTrackSDKNativeBridgeUnity.Instance.GetAllAssignments();
-            if (String.IsNullOrEmpty(assignmentsJson))
-            {
-                return new Assignment[0];
-            }
-
-            iOSAssignmentList parsed = JsonUtility.FromJson<iOSAssignmentList>(assignmentsJson);
-            if (parsed == null || parsed.items == null)
-            {
-                return new Assignment[0];
-            }
-
-            List<Assignment> assignments = new List<Assignment>(parsed.items.Length);
-            for (int i = 0; i < parsed.items.Length; i++)
-            {
-                string itemJson = JsonUtility.ToJson(parsed.items[i]);
-                Assignment? assignment = Assignment.FromJson(itemJson);
-                if (assignment != null)
-                {
-                    assignments.Add(assignment);
-                }
-            }
-
-            return assignments.ToArray();
+            return Assignment.FromJsonArray(assignmentsJson);
         }
     }
 }

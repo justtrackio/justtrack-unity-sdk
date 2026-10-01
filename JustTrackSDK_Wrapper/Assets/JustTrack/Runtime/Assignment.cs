@@ -78,6 +78,43 @@ namespace JustTrack
             public bool IsPending = false;
         }
 
+        [Serializable]
+        private class AssignmentDtoList
+        {
+            public AssignmentDto[] items = new AssignmentDto[]{};
+        }
+
+        internal static Assignment[] FromJsonArray(string json)
+        {
+            if (string.IsNullOrEmpty(json))
+            {
+                return new Assignment[0];
+            }
+
+            try
+            {
+                AssignmentDtoList parsed = JsonUtility.FromJson<AssignmentDtoList>(json);
+                if (parsed == null || parsed.items == null)
+                {
+                    return new Assignment[0];
+                }
+
+                var assignments = new System.Collections.Generic.List<Assignment>(parsed.items.Length);
+                foreach (var item in parsed.items)
+                {
+                    if (item != null)
+                    {
+                        assignments.Add(new Assignment(item.ConfigKey ?? "", item.ConfigValue ?? "", item.ExperimentId ?? "", item.IsPending));
+                    }
+                }
+
+                return assignments.ToArray();
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException("Failed to create Assignments from JSON array.", ex);
+            }
+        }
 
         internal static Assignment? FromJson(string json)
         {

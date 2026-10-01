@@ -197,7 +197,6 @@ public class GoogleAdsController : MonoBehaviour
                 {
                     rewardView.Show((Reward reward) =>
                     {
-                        // TODO: Reward the user.
                         Debug.Log(string.Format(rewardMsg, reward.Type, reward.Amount));
                     });
                 }

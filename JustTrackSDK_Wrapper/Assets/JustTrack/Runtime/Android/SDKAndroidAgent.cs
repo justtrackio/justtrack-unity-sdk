@@ -161,17 +161,14 @@ namespace JustTrack
             string? pTrackingProvider,
             string? pCustomUserId,
             bool pAutomaticInAppPurchaseTracking,
-            bool pEnableDebugMode,
             bool pManualStart,
             bool pEnableConsoleLogging,
-            Action<AttributionResponse> pOnSuccess,
-            Action<string> pOnFailure)
+            bool pEnableConnectionTracking,
+            string? pServerUrl,
+            string? pBundleId,
+            string? pAppVersion,
+            string? pAppCode)
         {
-            if (pEnableDebugMode)
-            {
-                using var integrationManager = new AndroidJavaClass($"{Package}.{IntegrationManagerClassPath}");
-                integrationManager.CallStatic("enableUnityJavaProxyDebugging");
-            }
             using var builder = new AndroidJavaObject($"{Package}.{BuilderClassPath}", CurrentActivity(), pApiKey);
             if (!String.IsNullOrEmpty(pTrackingId))
             {
@@ -182,19 +179,16 @@ namespace JustTrack
                 builder.Call<AndroidJavaObject>("setUserId", pCustomUserId)?.Dispose();
             }
 
-            var settings = JustTrackSettings.LoadFromResources();
-            if (settings != null && !String.IsNullOrEmpty(settings.AndroidBundleId))
+            if (!string.IsNullOrEmpty(pBundleId))
             {
-                builder.Call<AndroidJavaObject>("setPackageName", settings.AndroidBundleId)?.Dispose();
+                builder.Call<AndroidJavaObject>("setPackageName", pBundleId)?.Dispose();
             }
-            if (settings != null && (!String.IsNullOrEmpty(settings.AndroidAppVersion) || !String.IsNullOrEmpty(settings.AndroidAppCode)))
+            if (!string.IsNullOrEmpty(pAppVersion) && !string.IsNullOrEmpty(pAppCode))
             {
-                string versionName = String.IsNullOrEmpty(settings.AndroidAppVersion) ? settings.AndroidAppCode : settings.AndroidAppVersion;
-                string versionCode = String.IsNullOrEmpty(settings.AndroidAppCode) ? settings.AndroidAppVersion : settings.AndroidAppCode;
-                builder.Call<AndroidJavaObject>("setApplicationVersion", versionName, versionCode)?.Dispose();
+                builder.Call<AndroidJavaObject>("setApplicationVersion", pAppVersion, pAppCode)?.Dispose();
             }
 
-            string? serverUrl = settings?.ServerUrl;
+            string? serverUrl = pServerUrl;
 
             builder.Call<AndroidJavaObject>("setAutomaticInAppPurchaseTracking", pAutomaticInAppPurchaseTracking)?.Dispose();
             using var platformTypeClass = new AndroidJavaClass($"{Package}.{PlatformTypeClassPath}");
@@ -202,25 +196,13 @@ namespace JustTrack
             builder.Call<AndroidJavaObject>("setPlatformType", platformType)?.Dispose();
             builder.Call<AndroidJavaObject>("setManualStart", pManualStart)?.Dispose();
             builder.Call<AndroidJavaObject>("setLoggingEnabled", pEnableConsoleLogging)?.Dispose();
+            builder.Call<AndroidJavaObject>("setEnableConnectionTracking", pEnableConnectionTracking)?.Dispose();
             if (!string.IsNullOrEmpty(serverUrl))
             {
                 builder.Call<AndroidJavaObject>("setServerUrl", serverUrl)?.Dispose();
             }
             builder.Call<AndroidJavaObject>("runCallbacksSerially")?.Dispose();
             INSTANCE = builder.Call<AndroidJavaObject>("build");
-            Action onStartAction = () =>
-            {
-                using var responseFuture = INSTANCE.Call<AndroidJavaObject>("getAttribution");
-                RegisterCallbackWithTransform(responseFuture, AttributionResponse.FromAndroidObject, pOnSuccess, pOnFailure);
-            };
-            if (pManualStart)
-            {
-                onStart = onStartAction;
-            }
-            else
-            {
-                onStartAction.Invoke();
-            }
         }
 
         public void Start()
@@ -284,6 +266,27 @@ namespace JustTrack
                     pListener(response);
                 });
             }))?.Dispose();
+        }
+
+        public void GetAttribution(Action<AttributionResponse> pOnSuccess, Action<string> pOnFailure)
+        {
+            using var responseFuture = INSTANCE.Call<AndroidJavaObject>("getAttribution");
+            Action<AndroidJavaObject> onResolve = (obj) =>
+            {
+                var response = AttributionResponse.FromAndroidObject(obj);
+                JustTrackSDKBehaviour.CallOnMainThread(() =>
+                {
+                    pOnSuccess(response);
+                });
+            };
+            Action<string> onReject = (err) =>
+            {
+                JustTrackSDKBehaviour.CallOnMainThread(() =>
+                {
+                    pOnFailure(err);
+                });
+            };
+            responseFuture.Call("registerCallback", new Callback(onResolve, onReject));
         }
 
         public void RegisterRetargetingParameterListener(Action<RetargetingParameters> pListener)
@@ -416,6 +419,21 @@ namespace JustTrack
             INSTANCE.Call<AndroidJavaObject>("setFirebaseAppInstanceId", pFirebaseAppInstanceId)?.Dispose();
         }
 
+        public void SetGlobalDimension0(string? value)
+        {
+            INSTANCE.Call("setGlobalDimension0", value);
+        }
+
+        public void SetGlobalDimension1(string? value)
+        {
+            INSTANCE.Call("setGlobalDimension1", value);
+        }
+
+        public void SetGlobalDimension2(string? value)
+        {
+            INSTANCE.Call("setGlobalDimension2", value);
+        }
+
         public void PublishEvent(AppEvent pEvent, Action? pOnSuccess, Action<string>? pOnFailure)
         {
             using var javaEvent = new AndroidJavaObject($"{Package}.{EventClassPath}", pEvent.Name);
@@ -483,12 +501,6 @@ namespace JustTrack
                     obj.Call<bool>("isLimitedAdTracking")
                 );
             }, pOnSuccess, pOnFailure);
-        }
-
-        public void GetTestGroupId(Action<int?> pOnSuccess, Action<string> pOnFailure)
-        {
-            using var responseFuture = INSTANCE.Call<AndroidJavaObject>("getTestGroupId");
-            RegisterIntCallback(responseFuture, pOnSuccess, pOnFailure);
         }
 
         public void ForwardTransaction(string token, string productId, Money money, ProductType productType)
@@ -656,6 +668,7 @@ namespace JustTrack
         {
             AndroidJavaObject remoteConfigObject = GetRemoteConfig();
             using var allAssignments = remoteConfigObject.Call<AndroidJavaObject>("getAll");
+
             int size = allAssignments.Call<int>("size");
             List<Assignment> assignments = new List<Assignment>(size);
             for (int i = 0; i < size; i++)

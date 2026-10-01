@@ -4,6 +4,7 @@ using System.IO;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -77,7 +78,11 @@ namespace JustTrack
                 prefab = AssetDatabase.LoadAssetAtPath(fallback, typeof(GameObject));
             }
 
-            PrefabUtility.InstantiatePrefab(prefab);
+            var instance = PrefabUtility.InstantiatePrefab(prefab);
+            if (instance != null)
+            {
+                EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
+            }
         }
 
         /// <summary>

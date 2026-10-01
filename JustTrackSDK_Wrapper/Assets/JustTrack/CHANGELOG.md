@@ -1,5 +1,59 @@
 # justtrack SDK Changelog (Unity)
 
+## Version 8.0.0 (Sep 15, 2026)
+
+- Promoted 8.0.0-rc3 to stable. This release includes all changes documented in 8.0.0-rc1 through 8.0.0-rc3, with no additional changes.
+
+## Version 8.0.0-rc2 (Aug 11, 2026)
+
+- Replaced the undeclared dependency on Plastic SCM's private Newtonsoft namespace with the official `com.unity.nuget.newtonsoft-json` package.
+- Updated Android native SDK to 8.0.0-rc2.
+
+## Version 8.0.0-rc1 (Aug 04, 2026)
+
+- Added optional connection tracking, which attaches the connection type to tracked events.
+- Added `SetGlobalDimension0`, `SetGlobalDimension1`, and `SetGlobalDimension2` for dimensions applied to all future events.
+- Added `VIEW` and `CLICK` actions and strongly typed constructors to `JtPurchaseEvent`.
+- Added `ApplicationVersion` for configuring a custom version name and version code during runtime initialization.
+- Added automatic in-app purchase tracking on Android for apps using Google Play Billing Library 8 or 9.
+- Updated attribution parsing; AttributionCampaign.Id is now a string.
+- Updated runtime initialization to accept the connection-tracking option and an `ApplicationVersion` value.
+- Updated the Android and iOS native SDKs to `8.0.0-rc1`.
+- Removed `GetTestGroupId` from the public SDK API.
+- Fixed the editor so creating a justtrack SDK instance marks the scene as modified.
+
+## Version 7.1.6 (Jul 23, 2026)
+
+### Android
+- Updated Android native SDK to 7.1.3.
+- Fixed background service reporting an incorrect SDK version.
+
+## Version 7.1.5 (Jul 17, 2026)
+
+- Fix runtime constructor not resolving third-party adapter dependencies
+- Update iOS AppLovin adapter to 1.0.2
+
+## Version 7.1.3 (Jun 23, 2026)
+
+- Add support for runtime SDK initialization via constructor.
+
+## Version 7.1.2 (Jun 17, 2026)
+
+### Android
+- Updated Android native SDK to 7.1.2.
+- Allow background sync scheduling without successful attribution
+
+## Version 7.1.1 (Jun 10, 2026)
+
+### Android
+- Updated Android native SDK to 7.1.1.
+- Added background syncing of events.
+- The SDK now removes stale assignments after .fetch() completes.
+
+### iOS
+- Updated iOS native SDK to 7.1.1.
+- Bumped the version to keep it aligned with the Android SDK version. No functional changes included in this release.
+
 ## Version 7.1.0 (Mar 06, 2026)
 
 ### Added

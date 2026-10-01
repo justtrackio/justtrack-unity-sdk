@@ -17,7 +17,7 @@ extern "C" {
         free(str);
     }
 
-    void _justtrack_sdk_rp_init(const char *apiToken, const char *trackingId, const char *trackingProvider, const char *customUserId, int inactivityTimeFrameHours, int reAttributionTimeFrameDays, int reFetchAttributionDelaySeconds, int attributionRetryDelaySeconds, int automaticInAppPurchaseTracking, int manualStart, int enableConsoleLogging, const char *customBundleId, const char *customAppVersion, const char *customAppCode, const char *customServerUrl) {
+    void _justtrack_sdk_rp_init(const char *apiToken, const char *trackingId, const char *trackingProvider, const char *customUserId, int inactivityTimeFrameHours, int reAttributionTimeFrameDays, int reFetchAttributionDelaySeconds, int attributionRetryDelaySeconds, int automaticInAppPurchaseTracking, int manualStart, int enableConsoleLogging, int enableConnectionTracking, const char *customBundleId, const char *customAppVersion, const char *customAppCode, const char *customServerUrl) {
         NSString *nsApiToken = [NSString stringWithUTF8String:apiToken];
         NSString *nsTrackingId = [NSString stringWithUTF8String:trackingId];
         NSString *nsTrackingProvider = [NSString stringWithUTF8String:trackingProvider];
@@ -38,6 +38,7 @@ extern "C" {
 				automaticInAppPurchaseTracking: automaticInAppPurchaseTracking
 								   manualStart: manualStart
 						  enableConsoleLogging: enableConsoleLogging
+						  enableConnectionTracking: enableConnectionTracking
 							    customBundleId: nsCustomBundleId
 							  customAppVersion: nsCustomAppVersion
 							     customAppCode: nsCustomAppCode
@@ -50,6 +51,10 @@ extern "C" {
 
     void _justtrack_sdk_rp_stop() {
         [[NativeBridge shared] stop];
+    }
+
+    void _justtrack_sdk_rp_get_attribution() {
+        [[NativeBridge shared] getAttribution];
     }
 
     void _justtrack_sdk_rp_anonymize() {
@@ -84,6 +89,21 @@ extern "C" {
         NSString *nsFirebaseAppInstanceId = [NSString stringWithUTF8String:firebaseAppInstanceId];
 
         [[NativeBridge shared] setWithFirebaseAppInstanceId:nsFirebaseAppInstanceId];
+    }
+
+    void _justtrack_sdk_rp_set_global_dimension_0(const char *value) {
+        NSString *nsValue = value ? [NSString stringWithUTF8String:value] : nil;
+        [[NativeBridge shared] setWithGlobalDimension0:nsValue];
+    }
+
+    void _justtrack_sdk_rp_set_global_dimension_1(const char *value) {
+        NSString *nsValue = value ? [NSString stringWithUTF8String:value] : nil;
+        [[NativeBridge shared] setWithGlobalDimension1:nsValue];
+    }
+
+    void _justtrack_sdk_rp_set_global_dimension_2(const char *value) {
+        NSString *nsValue = value ? [NSString stringWithUTF8String:value] : nil;
+        [[NativeBridge shared] setWithGlobalDimension2:nsValue];
     }
 
     void _justtrack_sdk_rp_publish_event(const char *name, const char *dimensions, double value, const char *unit, const char *currency, const char *requestId) {
@@ -152,10 +172,6 @@ extern "C" {
     void _justtrack_sdk_rp_get_advertiser_id_info() {
         return [[NativeBridge shared] getAdvertiserIdInfo];
     }
-
-	int _justtrack_sdk_rp_get_test_group_id() {
-		return (int) [[NativeBridge shared] getTestGroupId];
-	}
 
     void _justtrack_sdk_rp_request_tracking_authorization() {
         return [[NativeBridge shared] requestTrackingAuthorization];

@@ -33,17 +33,6 @@ namespace JustTrack
         }
 
         /// <summary>
-        /// Checks if validation errors are allowed during build.
-        /// </summary>
-        /// <returns>True if validation errors are allowed, false otherwise.</returns>
-        internal static bool AreValidationErrorsAllowedOnBuild()
-        {
-            var settings = AssetDatabase.LoadAssetAtPath<JustTrackBuildSettings>(JustTrackBuildSettings.JustTrackBuildSettingsPath);
-
-            return settings != null && settings.AllowValidationErrorsOnBuild;
-        }
-
-        /// <summary>
         /// Gets existing settings or creates new ones if they don't exist.
         /// </summary>
         /// <returns>The JustTrack settings or null if they couldn't be loaded.</returns>
@@ -187,10 +176,37 @@ namespace JustTrack
                 yield return step;
             }
 
-            if (string.IsNullOrEmpty(settings.AndroidApiToken) && string.IsNullOrEmpty(settings.IosApiToken))
+            bool androidTokenMissing = string.IsNullOrEmpty(settings.AndroidApiToken);
+            bool iosTokenMissing = string.IsNullOrEmpty(settings.IosApiToken);
+
+            switch (mode)
             {
-                result.Errors.Add("Neither Android nor iOS API tokens are configured. You need to configure an API token for each platform to use the justtrack SDK");
+                case ValidationMode.ValidateAndroid:
+                    if (androidTokenMissing)
+                    {
+                        result.Errors.Add("No Android API token is configured. You need to configure an API token to build the justtrack SDK for Android.");
+                    }
+
+                    break;
+                case ValidationMode.ValidateIOS:
+                    if (iosTokenMissing)
+                    {
+                        result.Errors.Add("No iOS API token is configured. You need to configure an API token to build the justtrack SDK for iOS.");
+                    }
+
+                    break;
+                default:
+                    if (androidTokenMissing && iosTokenMissing)
+                    {
+                        result.Errors.Add("Neither Android nor iOS API tokens are configured. You need to configure an API token for each platform to use the justtrack SDK");
+                    }
+
+                    break;
             }
+
+            ValidateApplicationVersion("Android", settings.AndroidAppVersion, settings.AndroidAppCode, androidErrors);
+            ValidateApplicationVersion("iOS", settings.IosAppVersion, settings.IosAppCode, iosErrors);
+            ValidateApplicationVersion("WebGL", settings.WebglAppVersion, settings.WebglAppCode, result.Errors);
 
             ValidateTrackingSettings(!string.IsNullOrEmpty(settings.IosApiToken), settings.IosTrackingSettings, result.Warnings, iosErrors);
 
@@ -243,6 +259,25 @@ namespace JustTrack
             })))
             {
                 yield return step;
+            }
+        }
+
+        /// <summary>
+        /// Validates that a custom application version is either fully set (both version name and
+        /// version code) or fully empty. Adds an error when only one of the two values is provided.
+        /// </summary>
+        /// <param name="platform">The platform name used in the error message.</param>
+        /// <param name="appVersion">The custom application version name.</param>
+        /// <param name="appCode">The custom application version code.</param>
+        /// <param name="errors">The list to which validation errors are added.</param>
+        internal static void ValidateApplicationVersion(string platform, string? appVersion, string? appCode, List<string> errors)
+        {
+            bool hasVersion = !string.IsNullOrEmpty(appVersion);
+            bool hasCode = !string.IsNullOrEmpty(appCode);
+
+            if (hasVersion != hasCode)
+            {
+                errors.Add(platform + " custom application version is incomplete. Set both the custom app version and the custom app code, or leave both empty.");
             }
         }
 
@@ -548,8 +583,8 @@ namespace JustTrack
             }
             else if (apiToken.StartsWith("sandbox-"))
             {
-                url = $"https://ipv4.{LocalCredentials.SandboxRoot}/v0/sign";
-                token = apiToken.Substring("sandbox-".Length);
+                callback(true, true, "Sandbox token");
+                yield break;
             }
             else
             {

@@ -62,6 +62,39 @@ internal class PostponedInitSceneController : MonoBehaviour
         else
         {
             Destroy(gameObject);
+            return;
+        }
+
+        IronSourceAdQuality.Initialize(TestAppCredentials.IronSourceAdQualityAppKey);
+
+        var settings = Resources.Load<JustTrack.JustTrackSettings>("JustTrackSettings");
+        if (settings != null && settings.UseRuntimeConstructor)
+        {
+            JustTrack.JustTrackSDK.Init(
+#if UNITY_IOS
+                pApiKey: TestAppCredentials.JustTrackTestAppIosToken,
+#elif UNITY_WEBGL
+                pApiKey: TestAppCredentials.JustTrackTestAppWebGLToken,
+#else
+                pApiKey: TestAppCredentials.JustTrackTestAppAndroidToken,
+#endif
+                pTrackingId: null,
+                pTrackingProvider: null,
+                pCustomUserId: null,
+                pAutomaticInAppPurchaseTracking: true,
+                pManualStart: false,
+                pEnableConsoleLogging: true,
+                pEnableConnectionTracking: true,
+                pServerUrl: TestAppCredentials.JustTrackTestAppServerUrl,
+#if UNITY_WEBGL
+                pBundleId: "io.justtrack.app",
+#elif UNITY_ANDROID
+                pBundleId: "io.justtrack.test.unity",
+#else
+                pBundleId: UnityEngine.Application.identifier,
+#endif
+                pApplicationVersion: null
+            );
         }
     }
 }

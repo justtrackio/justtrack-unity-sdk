@@ -10,7 +10,7 @@ namespace JustTrack
 
                 void PublishEvent(AppEvent pEvent, Action? pOnSuccess = null, Action<string>? pOnFailure = null);
 
-                void Initialize(string pApiKey, string? pTrackingId, string? pTrackingProvider, string? pCustomUserId, bool pAutomaticInAppPurchaseTracking, bool pEnableDebugMode, bool pManualStart, bool pEnableConsoleLogging, Action<AttributionResponse> pOnSuccess, Action<string> pOnFailure);
+                void Initialize(string pApiKey, string? pTrackingId, string? pTrackingProvider, string? pCustomUserId, bool pAutomaticInAppPurchaseTracking, bool pManualStart, bool pEnableConsoleLogging, bool pEnableConnectionTracking, string? pServerUrl, string? pBundleId, string? pAppVersion, string? pAppCode);
 
                 void Start();
 
@@ -21,6 +21,8 @@ namespace JustTrack
                 bool IsRunning();
 
                 void RegisterAttributionListener(Action<AttributionResponse> pListener);
+
+                void GetAttribution(Action<AttributionResponse> pOnSuccess, Action<string> pOnFailure);
 
 #if UNITY_IOS
                 void ForwardTransactionId(string transactionId, string productId, int quantity);
@@ -59,11 +61,15 @@ namespace JustTrack
 
                 void SetFirebaseAppInstanceId(string pFirebaseAppInstanceId);
 
+                void SetGlobalDimension0(string? value);
+
+                void SetGlobalDimension1(string? value);
+
+                void SetGlobalDimension2(string? value);
+
                 void GetInstallInstanceId(Action<string> pOnSuccess, Action<string> pOnFailure);
 
                 void GetAdvertiserIdInfo(Action<AdvertiserIdInfo> pOnSuccess, Action<string> pOnFailure);
-
-                void GetTestGroupId(Action<int?> pOnSuccess, Action<string> pOnFailure);
 
                 void SetExperimentVariant(string experiment, string variant, string[]? tags, DateTime? happenedAt, Action pOnSuccess, Action<string> pOnFailure);
 

@@ -32,7 +32,7 @@ Add the scoped registry and package directly to your `Packages/manifest.json`:
 ```json
 {
   "dependencies": {
-    "io.justtrack.justtrack-unity-sdk": "7.1.0"
+    "io.justtrack.justtrack-unity-sdk": "8.0.0"
   },
   "scopedRegistries": [
     {

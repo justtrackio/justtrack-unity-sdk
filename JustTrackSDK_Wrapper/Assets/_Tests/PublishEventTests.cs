@@ -18,16 +18,12 @@ public class PublishEventTests
                 "",
                 null,
                 false, // pAutomaticInAppPurchaseTracking
-                false, // pEnableDebugMode
                 false, // pManualStart
                 false, // pEnableConsoleLogging
-                (response) =>
-                {
-
-                }, (error) =>
-                {
-
-                });
+                false, // pEnableConnectionTracking
+                null,  // pServerUrl
+                null,  // pBundleId
+                null); // pApplicationVersion
         
         Assert.IsTrue(JustTrackSDK.IsRunning());
     }

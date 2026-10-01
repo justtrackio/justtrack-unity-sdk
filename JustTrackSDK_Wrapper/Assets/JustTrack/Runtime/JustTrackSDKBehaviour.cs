@@ -9,21 +9,6 @@ namespace JustTrack
     /// </summary>
     public class JustTrackSDKBehaviour : MonoBehaviour
     {
-        // Invoked once the attribution has been retrieved from the backend if not null.
-        private static Action<AttributionResponse>? onInitialized = null;
-
-        // Invoked if an error occurs during attribution if not null.
-        private static Action<string>? onError = null;
-
-        // Stores the attribution response after the SDK has been initialized.
-        private static AttributionResponse? attributionResponse = null;
-
-        // Stores the error if getting the attribution fails.
-        private static string? initError = null;
-
-        // Lock guarding the attribution results and callbacks.
-        private static readonly object SyncLock = new object();
-
         static JustTrackSDKBehaviour()
         {
         }
@@ -64,6 +49,11 @@ namespace JustTrack
                 JustTrackSDK.RequestTrackingAuthorization((authorized) => { });
             }
 #endif
+            if (settings.UseRuntimeConstructor)
+            {
+                return;
+            }
+
             Init(settings);
         }
 
@@ -71,25 +61,41 @@ namespace JustTrack
         {
 #if UNITY_WEBGL
             var apiToken = settings.WebglApiToken;
-            var automaticInAppPurchaseTracking = false; // WebGL does not support IAP tracking
-            var enableDebugMode = settings.EnableDebugMode;
+            var automaticInAppPurchaseTracking = false;
             var manualStart = settings.ManualStart;
             var enableLogging = settings.EnableConsoleLogging;
+            string? bundleId = null;
+            string? appVersion = null;
+            string? appCode = null;
 #elif UNITY_IOS
             var apiToken = settings.IosApiToken;
             var automaticInAppPurchaseTracking = !settings.IosDisableAutomaticInAppPurchaseTracking;
-            var enableDebugMode = settings.EnableDebugMode;
             var manualStart = settings.ManualStart;
             var enableLogging = settings.EnableConsoleLogging;
+            string? bundleId = settings.IosBundleId;
+            string? appVersion = settings.IosAppVersion;
+            string? appCode = settings.IosAppCode;
 #else
             var apiToken = settings.AndroidApiToken;
             var automaticInAppPurchaseTracking = !settings.AndroidDisableAutomaticInAppPurchaseTracking;
-            var enableDebugMode = settings.EnableDebugMode;
             var manualStart = settings.ManualStart;
             var enableLogging = settings.EnableConsoleLogging;
+            string? bundleId = settings.AndroidBundleId;
+            string? appVersion = settings.AndroidAppVersion;
+            string? appCode = settings.AndroidAppCode;
 #endif
             string trackingId = string.Empty;
             string trackingProvider = string.Empty;
+
+            var enableConnectionTracking = settings.EnableConnectionTracking;
+
+            // Only forward a custom application version when both the version name and version code are
+            // configured. Otherwise fall back to the values provided by the platform (null).
+            ApplicationVersion? applicationVersion = null;
+            if (!string.IsNullOrEmpty(appVersion) && !string.IsNullOrEmpty(appCode))
+            {
+                applicationVersion = new ApplicationVersion(appVersion, appCode);
+            }
 
             JustTrackSDK.Init(
                 apiToken,
@@ -97,96 +103,12 @@ namespace JustTrack
                 trackingProvider,
                 null,
                 automaticInAppPurchaseTracking,
-                enableDebugMode,
                 manualStart,
                 enableLogging,
-                (response) =>
-            {
-                lock (SyncLock)
-                {
-                    attributionResponse = response;
-                    if (onInitialized != null)
-                    {
-                        var toCall = onInitialized;
-                        CallOnMainThread(() =>
-                        {
-                            toCall(response);
-                        });
-                    }
-
-                    onInitialized = null;
-                    onError = null;
-                }
-            }, (error) =>
-            {
-                lock (SyncLock)
-                {
-                    initError = error;
-                    if (onError != null)
-                    {
-                        var toCall = onError;
-                        CallOnMainThread(() =>
-                        {
-                            toCall(error);
-                        });
-                    }
-
-                    onInitialized = null;
-                    onError = null;
-                }
-            });
-        }
-
-        // Retrieve the attribution produced by the SDK. If the SDK already can provide an attribution, your
-        // callbacks are immediately invoked with the attribution result. Otherwise they are stored and called
-        // as soon as a result is available.
-        // You can call this method as many times as you want - each invocation will add your delegates to
-        // the list of delegates to call as soon as the attribution is available.
-
-        /// <summary>
-        /// Gets the attribution response from the justtrack SDK.
-        /// </summary>
-        /// <param name="pOnInitialized">Callback invoked when attribution is successfully retrieved.</param>
-        /// <param name="pOnError">Callback invoked if an error occurs during attribution retrieval.</param>
-        public static void GetAttribution(Action<AttributionResponse> pOnInitialized, Action<string> pOnError)
-        {
-            lock (SyncLock)
-            {
-                if (attributionResponse != null)
-                {
-                    CallOnMainThread(() =>
-                    {
-                        pOnInitialized(attributionResponse);
-                    });
-                }
-                else if (initError != null)
-                {
-                    CallOnMainThread(() =>
-                    {
-                        pOnError(initError);
-                    });
-                }
-                else
-                {
-                    if (onInitialized == null)
-                    {
-                        onInitialized = pOnInitialized;
-                    }
-                    else
-                    {
-                        onInitialized += pOnInitialized;
-                    }
-
-                    if (onError == null)
-                    {
-                        onError = pOnError;
-                    }
-                    else
-                    {
-                        onError += pOnError;
-                    }
-                }
-            }
+                enableConnectionTracking,
+                settings.ServerUrl,
+                bundleId,
+                applicationVersion);
         }
 
         private static int unityMainThreadId = -1;
@@ -236,5 +158,27 @@ namespace JustTrack
                 action();
             }
         }
+
+#if UNITY_WEBGL
+        private void OnWebGLInitCallback(string responseJson)
+        {
+            SDKWebGLAgent.INSTANCE.OnWebGLInitCallback(responseJson);
+        }
+
+        private void OnWebGLGetAttributionCallback(string responseJson)
+        {
+            SDKWebGLAgent.INSTANCE.OnWebGLGetAttributionCallback(responseJson);
+        }
+
+        private void OnWebGLAnonymizeCallback(string responseJson)
+        {
+            SDKWebGLAgent.INSTANCE.OnWebGLAnonymizeCallback(responseJson);
+        }
+
+        private void OnWebGLEventCallback(string callbackData)
+        {
+            SDKWebGLAgent.INSTANCE.OnWebGLEventCallback(callbackData);
+        }
+#endif
     }
 }

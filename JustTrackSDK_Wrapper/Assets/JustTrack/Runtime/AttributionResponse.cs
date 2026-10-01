@@ -15,7 +15,6 @@ namespace JustTrack
         /// </summary>
         /// <param name="pCampaign">The attribution campaign.</param>
         /// <param name="pUserType">The user type.</param>
-        /// <param name="pType">The attribution type.</param>
         /// <param name="pChannel">The attribution channel.</param>
         /// <param name="pPartner">The attribution partner.</param>
         /// <param name="pSourceId">The source ID.</param>
@@ -23,11 +22,10 @@ namespace JustTrack
         /// <param name="pSourcePlacement">The source placement.</param>
         /// <param name="pAdsetId">The ad set ID.</param>
         /// <param name="pCreatedAt">The creation date and time.</param>
-        private AttributionResponse(AttributionCampaign pCampaign, string pUserType, string pType, AttributionChannel pChannel, AttributionPartner pPartner, string? pSourceId, string? pSourceBundleId, string? pSourcePlacement, string? pAdsetId, DateTime pCreatedAt)
+        private AttributionResponse(AttributionCampaign pCampaign, string pUserType, AttributionChannel pChannel, AttributionPartner pPartner, string? pSourceId, string? pSourceBundleId, string? pSourcePlacement, string? pAdsetId, DateTime pCreatedAt)
         {
             this.Campaign = pCampaign;
             this.UserType = pUserType;
-            this.Type = pType;
             this.Channel = pChannel;
             this.Partner = pPartner;
             this.SourceId = pSourceId;
@@ -46,11 +44,6 @@ namespace JustTrack
         /// Gets the user type for this attribution.
         /// </summary>
         public string UserType { get; private set; }
-
-        /// <summary>
-        /// Gets the attribution type.
-        /// </summary>
-        public string Type { get; private set; }
 
         /// <summary>
         /// Gets the attribution channel.
@@ -97,7 +90,6 @@ namespace JustTrack
                 return new AttributionResponse(
                     AttributionCampaign.FromAndroidObject(campaign),
                     pResponseObject.Call<string>("getUserType"),
-                    pResponseObject.Call<string>("getType"),
                     AttributionChannel.FromAndroidObject(channel),
                     AttributionPartner.FromAndroidObject(partner),
                     pResponseObject.Call<string?>("getSourceId"),
@@ -109,11 +101,10 @@ namespace JustTrack
             }
 #endif
 #if UNITY_IOS || UNITY_WEBGL
-            internal static AttributionResponse CreateResponse(string userType, string type, int campaignId, string campaignName, string campaignType, int channelId, string channelName, bool channelIncent, int partnerId, string partnerName, string? sourceId, string? sourceBundleId, string? sourcePlacement, string? adsetId, DateTime createdAt) {
+            internal static AttributionResponse CreateResponse(string userType, string campaignId, string campaignName, string campaignType, int channelId, string channelName, bool channelIncent, int partnerId, string partnerName, string? sourceId, string? sourceBundleId, string? sourcePlacement, string? adsetId, DateTime createdAt) {
                 return new AttributionResponse(
                     AttributionCampaign.CreateCampaign(campaignId, campaignName, campaignType),
                     userType,
-                    type,
                     AttributionChannel.CreateChannel(channelId, channelName, channelIncent),
                     AttributionPartner.CreatePartner(partnerId, partnerName),
                     sourceId,
@@ -127,9 +118,8 @@ namespace JustTrack
 #if UNITY_EDITOR
             internal static AttributionResponse CreateFakeResponse() {
                 return new AttributionResponse(
-                    AttributionCampaign.CreateFakeCampaign(1, "fake campaign", "acquisition"),
+                    AttributionCampaign.CreateFakeCampaign("1", "fake campaign", "acquisition"),
                     "acquisition",
-                    "fake",
                     AttributionChannel.CreateFakeChannel(1, "Direct", false),
                     AttributionPartner.CreateFakePartner(1, "Organic"),
                     "fake source id",

@@ -16,18 +16,21 @@ namespace JustTrack
             string? pTrackingProvider,
             string? pCustomUserId,
             bool pAutomaticInAppPurchaseTracking,
-            bool pEnableDebugMode,
             bool pManualStart,
             bool pEnableConsoleLogging,
-            Action<AttributionResponse> pOnSuccess,
-            Action<string> pOnFailure)
+            bool pEnableConnectionTracking,
+            string? pServerUrl,
+            string? pBundleId,
+            string? pAppVersion,
+            string? pAppCode)
         {
-            AttributionResponse fakeResponse = AttributionResponse.CreateFakeResponse();
-
             EditorInitialized = true;
+        }
 
+        public void GetAttribution(Action<AttributionResponse> pOnSuccess, Action<string> pOnFailure)
+        {
             JustTrackSDKBehaviour.CallOnMainThread(() => {
-                pOnSuccess(fakeResponse);
+                pOnSuccess(AttributionResponse.CreateFakeResponse());
             });
         }
 
@@ -51,7 +54,7 @@ namespace JustTrack
 
         public bool IsRunning()
         {
-            return false;
+            return true;
         }
 
         public void RegisterAttributionListener(Action<AttributionResponse> pListener)
@@ -130,6 +133,21 @@ namespace JustTrack
         public void SetFirebaseAppInstanceId(string pFirebaseAppInstanceId)
         {
             LogDebug($"Forwarding Firebase app instance id {pFirebaseAppInstanceId}");
+        }
+
+        public void SetGlobalDimension0(string? value)
+        {
+            LogDebug($"Setting global dimension 0 to {value ?? "null"}");
+        }
+
+        public void SetGlobalDimension1(string? value)
+        {
+            LogDebug($"Setting global dimension 1 to {value ?? "null"}");
+        }
+
+        public void SetGlobalDimension2(string? value)
+        {
+            LogDebug($"Setting global dimension 2 to {value ?? "null"}");
         }
         
         public void SetExperimentVariant(string experiment, string variant, string[]? tags, DateTime? happenedAt, Action pOnSuccess, Action<string> pOnFailure)
@@ -239,10 +257,7 @@ namespace JustTrack
 #if !UNITY_WEBGL
         public void GetInstallInstanceId(Action<string> pOnSuccess, Action<string> pOnFailure)
         {
-            JustTrackSDKBehaviour.CallOnMainThread(() =>
-            {
-                pOnSuccess("00000000-0000-0000-0000-000000000000");
-            });
+            pOnSuccess("00000000-0000-0000-0000-000000000000");
         }
         
         public void SetCustomUserId(string pCustomUserId)
@@ -252,19 +267,9 @@ namespace JustTrack
 
         public void GetAdvertiserIdInfo(Action<AdvertiserIdInfo> pOnSuccess, Action<string> pOnFailure)
         {
-            JustTrackSDKBehaviour.CallOnMainThread(() =>
-            {
-                pOnSuccess(new AdvertiserIdInfo("00000000-0000-0000-0000-000000000000", false));
-            });
+            pOnSuccess(new AdvertiserIdInfo("00000000-0000-0000-0000-000000000000", false));
         }
 
-        public void GetTestGroupId(Action<int?> pOnSuccess, Action<string> pOnFailure)
-        {
-            JustTrackSDKBehaviour.CallOnMainThread(() =>
-            {
-                pOnSuccess(1);
-            });
-        }
 #endif
 
         public bool IsInitialized()

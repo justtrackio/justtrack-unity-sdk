@@ -211,6 +211,60 @@ namespace JustTrack
     public class JtPurchaseEvent : AppEvent
     {
         /// <summary>
+        /// Represents purchase actions that can be tracked.
+        /// </summary>
+        public enum Action
+        {
+            /// <summary>
+            /// View action
+            /// </summary>
+            VIEW,
+
+            /// <summary>
+            /// Click action
+            /// </summary>
+            CLICK,
+        }
+
+        private static string EncodeAction(Action pJtAction)
+        {
+            switch (pJtAction)
+            {
+                case Action.VIEW:
+                    return "view";
+                case Action.CLICK:
+                    return "click";
+                default:
+                    return pJtAction.ToString().ToLowerInvariant();
+            }
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="JtPurchaseEvent"/> class.
+        /// </summary>
+        /// <param name="pJtAction">The purchase action.</param>
+        /// <param name="pJtProductId">The product ID.</param>
+        /// <param name="pJtProductType">The product type.</param>
+        /// <param name="pJtToken">Optional token for the purchase.</param>
+        public JtPurchaseEvent(Action pJtAction, string? pJtProductId, string? pJtProductType, string? pJtToken = null)
+            : this(EncodeAction(pJtAction), pJtProductId, pJtProductType, pJtToken)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="JtPurchaseEvent"/> class with count.
+        /// </summary>
+        /// <param name="pJtAction">The purchase action.</param>
+        /// <param name="pJtProductId">The product ID.</param>
+        /// <param name="pJtProductType">The product type.</param>
+        /// <param name="pCount">The count value.</param>
+        /// <param name="pJtToken">Optional token for the purchase.</param>
+        public JtPurchaseEvent(Action pJtAction, string? pJtProductId, string? pJtProductType, double pCount, string? pJtToken = null)
+            : this(EncodeAction(pJtAction), pJtProductId, pJtProductType, pCount, pJtToken)
+        {
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="JtPurchaseEvent"/> class.
         /// </summary>
         /// <param name="pJtAction">The purchase action.</param>

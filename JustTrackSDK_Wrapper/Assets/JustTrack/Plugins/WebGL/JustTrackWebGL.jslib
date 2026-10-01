@@ -41,6 +41,17 @@ var JustTrackWebGLPlugin = {
             });
         },
 
+        createEventCallbackEnvelope: function(callbackId, success, data, error) {
+            return JSON.stringify({
+                callbackId: callbackId,
+                response: {
+                    success: success,
+                    data: data,
+                    error: error
+                }
+            });
+        },
+
         formatAttributionForUnity: function(attribution) {
             if (!attribution) {
                 return null;
@@ -98,17 +109,8 @@ var JustTrackWebGLPlugin = {
             JustTrackWebGL.sdk = window.justtrack;
             JustTrackWebGL.isInitialized = true;
 
-            window.justtrack.getAttribution()
-                .then(function(attribution) {
-                    var attributionJson = JustTrackWebGL.formatAttributionForUnity(attribution);
-                    var response = JustTrackWebGL.createSuccessResponse(attributionJson);
-                    JustTrackWebGL.sendUnityCallback(gameObjectName, callbackMethodName, response);
-                })
-                .catch(function(error) {
-                    console.error('[justtrack WebGL] Attribution error:', error);
-                    var response = JustTrackWebGL.createErrorResponse(error.message || 'Failed to get attribution');
-                    JustTrackWebGL.sendUnityCallback(gameObjectName, callbackMethodName, response);
-                });
+            var response = JustTrackWebGL.createSuccessResponse(null);
+            JustTrackWebGL.sendUnityCallback(gameObjectName, callbackMethodName, response);
 
         } catch (e) {
             console.error('[justtrack WebGL] Initialization error:', e);
@@ -178,12 +180,13 @@ var JustTrackWebGLPlugin = {
         }
     },
 
-    _justtrack_webgl_track_event: function(eventNamePtr, dimensionsJsonPtr, valueJsonPtr, gameObjectNamePtr, callbackMethodNamePtr) {
+    _justtrack_webgl_track_event: function(eventNamePtr, dimensionsJsonPtr, valueJsonPtr, gameObjectNamePtr, callbackMethodNamePtr, callbackIdPtr) {
         var eventName = JustTrackWebGL.ptrToString(eventNamePtr);
         var dimensionsJson = JustTrackWebGL.ptrToString(dimensionsJsonPtr);
         var valueJson = JustTrackWebGL.ptrToString(valueJsonPtr);
         var gameObjectName = JustTrackWebGL.ptrToString(gameObjectNamePtr);
         var callbackMethodName = JustTrackWebGL.ptrToString(callbackMethodNamePtr);
+        var callbackId = JustTrackWebGL.ptrToString(callbackIdPtr);
 
         try {
             if (!JustTrackWebGL.isInitialized || !JustTrackWebGL.sdk) {
@@ -217,29 +220,66 @@ var JustTrackWebGLPlugin = {
 
             var trackResult = JustTrackWebGL.sdk.track(eventName, dimensions, value);
 
-            if (callbackMethodName && callbackMethodName.length > 0) {
+            if (callbackMethodName && callbackMethodName.length > 0 && callbackId && callbackId.length > 0) {
                 trackResult.promise
                     .then(function() {
-                        var response = JustTrackWebGL.createSuccessResponse(null);
-                        JustTrackWebGL.sendUnityCallback(gameObjectName, callbackMethodName, response);
+                        var callbackData = JustTrackWebGL.createEventCallbackEnvelope(callbackId, true, null, null);
+                        JustTrackWebGL.sendUnityCallback(gameObjectName, callbackMethodName, callbackData);
                     })
                     .catch(function(error) {
                         console.error('[justtrack WebGL] Track event error:', error);
-                        var response = JustTrackWebGL.createErrorResponse(error.message || 'Track event failed');
-                        JustTrackWebGL.sendUnityCallback(gameObjectName, callbackMethodName, response);
+                        var callbackData = JustTrackWebGL.createEventCallbackEnvelope(
+                            callbackId,
+                            false,
+                            null,
+                            error.message || 'Track event failed'
+                        );
+                        JustTrackWebGL.sendUnityCallback(gameObjectName, callbackMethodName, callbackData);
                     });
             }
 
         } catch (e) {
             console.error('[justtrack WebGL] Track event error:', e);
-            if (callbackMethodName && callbackMethodName.length > 0) {
-                var response = JustTrackWebGL.createErrorResponse(e.message || 'Track event failed');
-                JustTrackWebGL.sendUnityCallback(gameObjectName, callbackMethodName, response);
+            if (callbackMethodName && callbackMethodName.length > 0 && callbackId && callbackId.length > 0) {
+                var callbackData = JustTrackWebGL.createEventCallbackEnvelope(
+                    callbackId,
+                    false,
+                    null,
+                    e.message || 'Track event failed'
+                );
+                JustTrackWebGL.sendUnityCallback(gameObjectName, callbackMethodName, callbackData);
             }
         }
     },
 
-};
+    _justtrack_webgl_get_attribution: function(gameObjectNamePtr, callbackMethodNamePtr) {
+        var gameObjectName = JustTrackWebGL.ptrToString(gameObjectNamePtr);
+        var callbackMethodName = JustTrackWebGL.ptrToString(callbackMethodNamePtr);
 
+        try {
+            if (!JustTrackWebGL.isInitialized || !JustTrackWebGL.sdk) {
+                throw new Error('SDK not initialized');
+            }
+
+            JustTrackWebGL.sdk.getAttribution()
+                .then(function(attribution) {
+                    var attributionJson = JustTrackWebGL.formatAttributionForUnity(attribution);
+                    var response = JustTrackWebGL.createSuccessResponse(attributionJson);
+                    JustTrackWebGL.sendUnityCallback(gameObjectName, callbackMethodName, response);
+                })
+                .catch(function(error) {
+                    console.error('[justtrack WebGL] GetAttribution error:', error);
+                    var response = JustTrackWebGL.createErrorResponse(error.message || 'Failed to get attribution');
+                    JustTrackWebGL.sendUnityCallback(gameObjectName, callbackMethodName, response);
+                });
+
+        } catch (e) {
+            console.error('[justtrack WebGL] GetAttribution error:', e);
+            var response = JustTrackWebGL.createErrorResponse(e.message || 'GetAttribution failed');
+            JustTrackWebGL.sendUnityCallback(gameObjectName, callbackMethodName, response);
+        }
+    },
+
+};
 autoAddDeps(JustTrackWebGLPlugin, '$JustTrackWebGL');
 mergeInto(LibraryManager.library, JustTrackWebGLPlugin);

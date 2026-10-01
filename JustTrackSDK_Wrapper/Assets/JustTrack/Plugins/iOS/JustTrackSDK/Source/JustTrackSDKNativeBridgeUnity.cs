@@ -12,11 +12,13 @@ internal class JustTrackSDKNativeBridgeUnity : MonoBehaviour {
     [DllImport("__Internal")]
     private static extern void _justtrack_sdk_rp_free_string(IntPtr s);
     [DllImport("__Internal")]
-    private static extern void _justtrack_sdk_rp_init(string apiToken, string trackingId, string trackingProvider, string customUserId, int inactivityTimeFrameHours, int reAttributionTimeFrameDays, int reFetchAttributionDelaySeconds, int attributionRetryDelaySeconds, int automaticInAppPurchaseTracking, int manualStart, int enableConsoleLogging, string customBundleId, string customAppVersion, string customAppCode, string? customServerUrl);
+    private static extern void _justtrack_sdk_rp_init(string apiToken, string trackingId, string trackingProvider, string customUserId, int inactivityTimeFrameHours, int reAttributionTimeFrameDays, int reFetchAttributionDelaySeconds, int attributionRetryDelaySeconds, int automaticInAppPurchaseTracking, int manualStart, int enableConsoleLogging, int enableConnectionTracking, string customBundleId, string customAppVersion, string customAppCode, string? customServerUrl);
     [DllImport("__Internal")]
     private static extern void _justtrack_sdk_rp_start();
     [DllImport("__Internal")]
     private static extern void _justtrack_sdk_rp_stop();
+    [DllImport("__Internal")]
+    private static extern void _justtrack_sdk_rp_get_attribution();
     [DllImport("__Internal")]
     private static extern void _justtrack_sdk_rp_anonymize();
     [DllImport("__Internal")]
@@ -28,13 +30,17 @@ internal class JustTrackSDKNativeBridgeUnity : MonoBehaviour {
     [DllImport("__Internal")]
     private static extern void _justtrack_sdk_rp_get_advertiser_id_info();
     [DllImport("__Internal")]
-    private static extern int _justtrack_sdk_rp_get_test_group_id();
-    [DllImport("__Internal")]
     private static extern void _justtrack_sdk_rp_set_user_id(string customUserId);
     [DllImport("__Internal")]
     private static extern void _justtrack_sdk_rp_set_automatic_in_app_purchase_tracking(bool automaticInAppPurchaseTracking);
     [DllImport("__Internal")]
     private static extern void _justtrack_sdk_rp_set_firebase_app_instance_id(string firebaseAppInstanceId);
+    [DllImport("__Internal")]
+    private static extern void _justtrack_sdk_rp_set_global_dimension_0(string? value);
+    [DllImport("__Internal")]
+    private static extern void _justtrack_sdk_rp_set_global_dimension_1(string? value);
+    [DllImport("__Internal")]
+    private static extern void _justtrack_sdk_rp_set_global_dimension_2(string? value);
     [DllImport("__Internal")]
     private static extern void _justtrack_sdk_rp_publish_event(string name, string dimensions, double value, string? unit, string? currency, string? requestId);
     [DllImport("__Internal")]
@@ -117,17 +123,14 @@ internal class JustTrackSDKNativeBridgeUnity : MonoBehaviour {
         bool automaticInAppPurchaseTracking,
         bool manualStart,
         bool enableConsoleLogging,
+        bool enableConnectionTracking,
         string customBundleId,
         string customAppVersion,
         string customAppCode,
         string? customServerUrl,
-        Action<string> onInitialized,
-        Action<string> onSuccess,
-        Action<string> onError)
+        Action<string> onInitialized)
     {
         onSdkInitialized += onInitialized;
-        onAttributionDone += onSuccess;
-        onAttributionError += onError;
         _justtrack_sdk_rp_init(
             apiToken,
             trackingId != null ? trackingId : "",
@@ -140,6 +143,7 @@ internal class JustTrackSDKNativeBridgeUnity : MonoBehaviour {
             (automaticInAppPurchaseTracking ? 1 : 0),
             (manualStart ? 1 : 0),
             (enableConsoleLogging ?  1 : 0),
+            (enableConnectionTracking ? 1 : 0),
             customBundleId ?? "",
             customAppVersion ?? "",
             customAppCode ?? "",
@@ -269,6 +273,21 @@ internal class JustTrackSDKNativeBridgeUnity : MonoBehaviour {
         _justtrack_sdk_rp_set_firebase_app_instance_id(firebaseAppInstanceId);
     }
 
+    internal void SetGlobalDimension0(string? value)
+    {
+        _justtrack_sdk_rp_set_global_dimension_0(value);
+    }
+
+    internal void SetGlobalDimension1(string? value)
+    {
+        _justtrack_sdk_rp_set_global_dimension_1(value);
+    }
+
+    internal void SetGlobalDimension2(string? value)
+    {
+        _justtrack_sdk_rp_set_global_dimension_2(value);
+    }
+
     internal void IntegrateWithAppLovin(string? customUserId, Action pOnSuccess, Action<string> pOnFailure)
     {
         onIntegrateAppLovinDone += pOnSuccess;
@@ -309,16 +328,6 @@ internal class JustTrackSDKNativeBridgeUnity : MonoBehaviour {
         onGetAdvertiserIdInfoDone += onSuccess;
         onGetAdvertiserIdInfoError += onError;
         _justtrack_sdk_rp_get_advertiser_id_info();
-    }
-
-    internal int? GetTestGroupId()
-    {
-        int testGroupId = _justtrack_sdk_rp_get_test_group_id();
-        if (testGroupId == -1) {
-            return null;
-        }
-
-        return testGroupId;
     }
 
     internal void RequestTrackingAuthorization(Action<bool> onAuthorized)
@@ -496,8 +505,8 @@ internal class JustTrackSDKNativeBridgeUnity : MonoBehaviour {
     
     
     private event Action<string>? onSdkInitialized = null;
-    private event Action<string>? onAttributionDone = null;
-    private event Action<string>? onAttributionError = null;
+    private event Action<string>? onGetAttributionDone = null;
+    private event Action<string>? onGetAttributionError = null;
     private event Action<string>? onGetRetargetingParametersDone = null;
     private event Action<string>? onGetRetargetingParametersError = null;
     private event Action<string>? onGetAdvertiserIdInfoDone = null;
@@ -536,24 +545,33 @@ internal class JustTrackSDKNativeBridgeUnity : MonoBehaviour {
         onSdkInitialized = null;
     }
 
+    internal void GetAttribution(Action<string> pOnSuccess, Action<string> pOnFailure)
+    {
+        onGetAttributionDone += pOnSuccess;
+        onGetAttributionError += pOnFailure;
+        _justtrack_sdk_rp_get_attribution();
+    }
+
     internal void OnAttributionDone(string response)
     {
-        if (onAttributionDone != null)
+        if (onGetAttributionDone != null)
         {
-            onAttributionDone.Invoke(response);
+            onGetAttributionDone.Invoke(response);
         }
-        onAttributionDone = null;
-        onAttributionError = null;
+
+        onGetAttributionDone = null;
+        onGetAttributionError = null;
     }
 
     internal void OnAttributionError(string error)
     {
-        if (onAttributionError != null)
+        if (onGetAttributionError != null)
         {
-            onAttributionError.Invoke(error);
+            onGetAttributionError.Invoke(error);
         }
-        onAttributionDone = null;
-        onAttributionError = null;
+
+        onGetAttributionDone = null;
+        onGetAttributionError = null;
     }
 
     internal void OnGetRetargetingParametersDone(string response)

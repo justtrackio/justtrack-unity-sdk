@@ -10,10 +10,16 @@ public class InAppPurchasesButtonController : MonoBehaviour, IDetailedStoreListe
 {
     private static IStoreController storeController;
 
+#if UNITY_IOS
     private const string ConsumableId = "consumable_purchase";
     private const string NonConsumableId = "non_consumable_purchase";
     private const string AutoRenewingSubscriptionId = "auto_renewable_subscription";
     private const string NonRenewingSubscriptionId = "non_renewing_subscription";
+#else
+    private const string ConsumableId = "product_2";
+    private const string NonConsumableId = "product_1";
+    private const string AutoRenewingSubscriptionId = "sub_1";
+#endif
 
     private async void Start()
     {
@@ -35,7 +41,9 @@ public class InAppPurchasesButtonController : MonoBehaviour, IDetailedStoreListe
         builder.AddProduct(ConsumableId, UnityEngine.Purchasing.ProductType.Consumable);
         builder.AddProduct(NonConsumableId, UnityEngine.Purchasing.ProductType.NonConsumable);
         builder.AddProduct(AutoRenewingSubscriptionId, UnityEngine.Purchasing.ProductType.Subscription);
+#if UNITY_IOS
         builder.AddProduct(NonRenewingSubscriptionId, UnityEngine.Purchasing.ProductType.Subscription);
+#endif
 
         UnityPurchasing.Initialize(this, builder);
     }
@@ -52,7 +60,11 @@ public class InAppPurchasesButtonController : MonoBehaviour, IDetailedStoreListe
 
     public void OnClickNonRenewingSubscription()
     {
+#if UNITY_IOS
         BuyProductId(NonRenewingSubscriptionId);
+#else
+        Debug.Log("Non-renewing subscriptions are only available on iOS.");
+#endif
     }
 
     public void OnClickAutoRenewableSubscription()
@@ -117,11 +129,17 @@ public class InAppPurchasesButtonController : MonoBehaviour, IDetailedStoreListe
 
     public void OnPurchaseFailed(Product product, PurchaseFailureDescription failureDescription)
     {
-        Debug.Log($"OnPurchaseFailed: FAIL. Product id: {failureDescription.productId}, Message: {failureDescription.message}");
+        Debug.Log($"OnPurchaseFailed: FAIL. Product id: {failureDescription.item.Product.definition.id}, Message: {failureDescription.message}");
     }
 
     private void BuyProductId(string productId)
     {
+        if (storeController == null)
+        {
+            Debug.Log("BuyProductId: FAIL. Store not initialized yet.");
+            return;
+        }
+
         var product = storeController.products.WithID(productId);
 
         if (product?.availableToPurchase == true)

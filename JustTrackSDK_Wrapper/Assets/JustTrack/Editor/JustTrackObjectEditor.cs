@@ -68,6 +68,7 @@ namespace JustTrack
         internal static void RenderGUI(SerializedObject serializedObject, ref bool justTrackFoldout, ref int selectedApiTokenPlatform, ref bool attFoldout, ref bool integrationsFoldout, ref bool loggingFoldout, ref bool ironsourceFoldout, ref int selectedIronsourcePlatform, ref bool firebaseFoldout, ref int selectedFirebasePlatform, Action repaint)
         {
             SerializedProperty manualStart = serializedObject.FindProperty("ManualStart");
+            SerializedProperty useRuntimeConstructor = serializedObject.FindProperty("UseRuntimeConstructor");
             SerializedProperty androidApiToken = serializedObject.FindProperty("AndroidApiToken");
             SerializedProperty iosApiToken = serializedObject.FindProperty("IosApiToken");
             SerializedProperty webglApiToken = serializedObject.FindProperty("WebglApiToken");
@@ -102,11 +103,15 @@ namespace JustTrack
             SerializedProperty iosTrackingSettingsFacebookAudienceNetworkIntegration = iosTrackingSettings.FindPropertyRelative("FacebookAudienceNetworkIntegration");
 
             SerializedProperty enableConsoleLogging = serializedObject.FindProperty("EnableConsoleLogging");
+            SerializedProperty enableConnectionTracking = serializedObject.FindProperty("EnableConnectionTracking");
 
             serializedObject.Update();
 
             using (var check = new EditorGUI.ChangeCheckScope())
             {
+                float previousLabelWidth = EditorGUIUtility.labelWidth;
+                EditorGUIUtility.labelWidth = 180;
+
                 string[] platformNames = { "Android", "iOS", "WebGL" };
                 var facebookAudienceNetworkIntegrationValues = Enum.GetValues(FacebookAudienceNetworkIntegration.NoIntegration.GetType());
 
@@ -157,6 +162,11 @@ namespace JustTrack
                 bool hasIOS = !string.IsNullOrEmpty(iosApiToken.stringValue);
                 bool hasWebGL = !string.IsNullOrEmpty(webglApiToken.stringValue);
 
+                EditorGUILayout.PropertyField(useRuntimeConstructor, new GUIContent("Use Runtime Constructor", "When enabled, the SDK will not auto-initialize. Call JustTrackSDK.Init() manually at runtime."));
+                EditorGUILayout.Space();
+
+                if (!useRuntimeConstructor.boolValue)
+                {
                 justTrackFoldout = EditorGUILayout.Foldout(justTrackFoldout, new GUIContent("justtrack SDK Settings"), true);
 
                 if (justTrackFoldout)
@@ -188,6 +198,7 @@ namespace JustTrack
                     }
 
                     EditorGUILayout.HelpBox("You have to configure the correct API token for each platform you want to build for. An API token should be a random 64 character string.", MessageType.Info);
+
                     string apiToken = string.Empty;
                     switch (selectedApiTokenPlatform)
                     {
@@ -201,6 +212,11 @@ namespace JustTrack
                             EditorGUILayout.PropertyField(androidBundleId, new GUIContent("Custom Bundle ID"));
                             EditorGUILayout.PropertyField(androidAppVersion, new GUIContent("Custom App Version"));
                             EditorGUILayout.PropertyField(androidAppCode, new GUIContent("Custom App Code"));
+                            if (string.IsNullOrEmpty(androidAppVersion.stringValue) != string.IsNullOrEmpty(androidAppCode.stringValue))
+                            {
+                                EditorGUILayout.HelpBox("Custom App Version and Custom App Code must both be set or both be left empty.", MessageType.Error);
+                            }
+
                             break;
                         case 1:
                             EditorGUILayout.PropertyField(iosApiToken, new GUIContent("iOS API Token"));
@@ -212,6 +228,11 @@ namespace JustTrack
                             EditorGUILayout.PropertyField(iosBundleId, new GUIContent("Custom Bundle ID"));
                             EditorGUILayout.PropertyField(iosAppVersion, new GUIContent("Custom App Version"));
                             EditorGUILayout.PropertyField(iosAppCode, new GUIContent("Custom App Code"));
+                            if (string.IsNullOrEmpty(iosAppVersion.stringValue) != string.IsNullOrEmpty(iosAppCode.stringValue))
+                            {
+                                EditorGUILayout.HelpBox("Custom App Version and Custom App Code must both be set or both be left empty.", MessageType.Error);
+                            }
+
                             break;
                         case 2:
                             EditorGUILayout.PropertyField(webglApiToken, new GUIContent("WebGL API Token"));
@@ -222,6 +243,11 @@ namespace JustTrack
                             EditorGUILayout.PropertyField(webglBundleId, new GUIContent("Bundle ID"));
                             EditorGUILayout.PropertyField(webglAppVersion, new GUIContent("App Version"));
                             EditorGUILayout.PropertyField(webglAppCode, new GUIContent("App Code"));
+                            if (string.IsNullOrEmpty(webglAppVersion.stringValue) != string.IsNullOrEmpty(webglAppCode.stringValue))
+                            {
+                                EditorGUILayout.HelpBox("App Version and App Code must both be set or both be left empty.", MessageType.Error);
+                            }
+
                             break;
                     }
 
@@ -252,7 +278,7 @@ namespace JustTrack
                             EditorGUILayout.HelpBox("Verification of your API token could not be performed. Are you offline?", MessageType.Warning);
                             break;
                         case VerificationResult.MISSING:
-                            EditorGUILayout.HelpBox("You did not configure an API token and can't use the justtrack SDK on " + platformNames[selectedApiTokenPlatform] + ".", MessageType.Warning);
+                            EditorGUILayout.HelpBox("You did not configure an API token and can't use the justtrack SDK on " + platformNames[selectedApiTokenPlatform] + ".", MessageType.Error);
                             break;
                     }
 
@@ -375,11 +401,14 @@ namespace JustTrack
                         }
                     }
                 }
+                }
 
                 ///////////////////
                 // DOCUMENTATION //
                 ///////////////////
 
+                if (!useRuntimeConstructor.boolValue)
+                {
                 EditorGUILayout.Space();
                 EditorGUILayout.HelpBox("For more information on setting up the justtrack SDK check out the relevant docs.", MessageType.None);
                 EditorGUILayout.Space();
@@ -416,6 +445,7 @@ namespace JustTrack
 
                 GUILayout.FlexibleSpace();
                 GUILayout.EndHorizontal();
+                } // end if (!useRuntimeConstructor) for docs
 
                 //////////////////
                 // INTEGRATIONS //
@@ -457,10 +487,23 @@ namespace JustTrack
                     }
                 }
 
+                ////////////////////////
+                // CONNECTION TRACKING //
+                ////////////////////////
+
+                if (!useRuntimeConstructor.boolValue && (selectedApiTokenPlatform == 0 || selectedApiTokenPlatform == 1))
+                {
+                    EditorGUILayout.Space();
+                    EditorGUILayout.HelpBox("Connection tracking attaches a connection type dimension to every tracked event.", MessageType.Info);
+                    EditorGUILayout.PropertyField(enableConnectionTracking, new GUIContent("Enable Connection Tracking"));
+                }
+
                 /////////////////////
                 // CONSOLE LOGGING //
                 /////////////////////
 
+                if (!useRuntimeConstructor.boolValue)
+                {
                 EditorGUILayout.Space();
                 loggingFoldout = EditorGUILayout.Foldout(loggingFoldout, new GUIContent("justtrack Console Logging"), true);
                 if (loggingFoldout)
@@ -471,6 +514,7 @@ namespace JustTrack
 
                     EditorGUILayout.PropertyField(enableConsoleLogging, new GUIContent("Enable Console Logging"));
                 }
+                } // end if (!useRuntimeConstructor) for logging
 
                 // Only show regenerate dependencies for Android and iOS (not for WebGL)
                 if (selectedApiTokenPlatform != 2)
@@ -487,6 +531,8 @@ namespace JustTrack
                 {
                     JustTrackCodeGenerator.GenerateDependencyFile();
                 }
+
+                EditorGUIUtility.labelWidth = previousLabelWidth;
             }
         }
 

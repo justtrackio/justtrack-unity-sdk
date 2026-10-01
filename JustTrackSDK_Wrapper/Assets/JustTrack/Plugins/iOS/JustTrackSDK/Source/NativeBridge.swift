@@ -66,6 +66,7 @@ struct EmptyUnityMessageSender: UnityMessageSender {
 		automaticInAppPurchaseTracking: Bool,
 		manualStart: Bool,
 		enableConsoleLogging: Bool,
+		enableConnectionTracking: Bool,
 		customBundleId: String,
 		customAppVersion: String,
 		customAppCode: String,
@@ -86,6 +87,7 @@ struct EmptyUnityMessageSender: UnityMessageSender {
 					.set(automaticInAppPurchaseTracking: automaticInAppPurchaseTracking)
 					.set(manualStart: manualStart)
 					.set(isLoggingEnabled: enableConsoleLogging)
+					.set(enableConnectionTracking: enableConnectionTracking)
 
 				if !customBundleId.isEmpty {
 					builder = builder.set(bundleId: customBundleId)
@@ -127,19 +129,10 @@ struct EmptyUnityMessageSender: UnityMessageSender {
 			})
 
 			let onStartBlock = {
-				sdk.attribution.observe(using: { result in
-					switch result {
-					case .failure(let error):
-						self.sendMessage(receiver: "OnAttributionError", message: "Failed to attribute user: \(error.justTrackGetErrorDescription())")
-					case .success(let response):
-						self.sendMessage(receiver: "OnAttributionDone", message: Self.encodeAttributionResponse(response: response))
-					}
-				})
-
 				sdk.getInstallInstanceId().observe { result in
 					switch result {
 					case let .failure(error):
-						self.sendMessage(receiver: "OnAttributionError", message: "Failed to get install instance id: \(error.justTrackGetErrorDescription())")
+						self.sendMessage(receiver: "OnSdkInitialized", message: "{\"installInstanceId\": \"\"}")
 					case let .success(installInstanceId):
 						self.sendMessage(
 							receiver: "OnSdkInitialized",
@@ -168,6 +161,19 @@ struct EmptyUnityMessageSender: UnityMessageSender {
 	@objc public func stop() {
 		withSdk { sdk in
 			sdk.stop()
+		}
+	}
+
+	@objc public func getAttribution() {
+		withSdk { [self] sdk in
+			sdk.attribution.observe(using: { result in
+				switch result {
+				case .failure(let error):
+					self.sendMessage(receiver: "OnAttributionError", message: error.justTrackGetErrorDescription())
+				case .success(let response):
+					self.sendMessage(receiver: "OnAttributionDone", message: Self.encodeAttributionResponse(response: response))
+				}
+			})
 		}
 	}
 
@@ -243,6 +249,24 @@ struct EmptyUnityMessageSender: UnityMessageSender {
 	@objc public func set(firebaseAppInstanceId: String) {
 		withSdk { sdk in
 			_ = sdk.set(firebaseAppInstanceId: firebaseAppInstanceId)
+		}
+	}
+
+	@objc public func set(globalDimension0 value: String?) {
+		withSdk { sdk in
+			sdk.set(globalDimension0: value)
+		}
+	}
+
+	@objc public func set(globalDimension1 value: String?) {
+		withSdk { sdk in
+			sdk.set(globalDimension1: value)
+		}
+	}
+
+	@objc public func set(globalDimension2 value: String?) {
+		withSdk { sdk in
+			sdk.set(globalDimension2: value)
 		}
 	}
 
@@ -374,7 +398,7 @@ struct EmptyUnityMessageSender: UnityMessageSender {
 
 	@objc public func integrateWithIronSource(customUserId: String?) {
 #if JUSTTRACK_UNITY_IRONSOURCE
-		integrate(with: JusttrackIronSourceAdapter(customUserId: customUserId)).observe(on: .main) { [self] integrationResult in
+		integrate(with: JusttrackIronSourceAdapter()).observe(on: .main) { [self] integrationResult in
 			switch integrationResult {
 			case let .failure(error):
 				sendMessage(receiver: "OnIntegrateIronSourceError", message: error.localizedDescription)
@@ -430,10 +454,6 @@ struct EmptyUnityMessageSender: UnityMessageSender {
 				}
 			}
 		}
-	}
-
-	@objc public func getTestGroupId() -> Int {
-		return sdk?.testGroupId ?? -1
 	}
 
 	@objc public func requestTrackingAuthorization() {
@@ -607,8 +627,7 @@ struct EmptyUnityMessageSender: UnityMessageSender {
 		let dto: [String: String?] = [
 			"userType": response.userType,
 			"redownload": String(response.isRedownload),
-			"type": response.type,
-			"campaignId": String(response.campaign.id),
+			"campaignId": response.campaign.id,
 			"campaignName": response.campaign.name,
 			"campaignType": response.campaign.type,
 			"channelId": String(response.channel.id),

@@ -36,6 +36,13 @@ namespace JustTrack
                 throw new BuildFailedException("justtrack SDK configuration was not found");
             }
 
+            // When the runtime constructor is used, the SDK is not configured via the settings asset,
+            // so there is nothing to validate at build time.
+            if (settings.UseRuntimeConstructor)
+            {
+                return;
+            }
+
             JustTrackUtils.ValidationMode mode = JustTrackUtils.ValidationMode.ValidateAll;
             var buildTarget = report.summary.platform;
             if (buildTarget == BuildTarget.Android)
@@ -66,7 +73,7 @@ namespace JustTrack
                 Debug.LogWarning(warning);
             }
 
-            if (validateResult.Errors.Count > 0 && !JustTrackUtils.AreValidationErrorsAllowedOnBuild())
+            if (validateResult.Errors.Count > 0)
             {
                 throw new BuildFailedException("justtrack SDK configuration is not valid");
             }

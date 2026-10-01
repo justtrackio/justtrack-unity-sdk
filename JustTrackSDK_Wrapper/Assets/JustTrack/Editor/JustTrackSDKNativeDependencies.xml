@@ -1,23 +1,24 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <dependencies>
   <androidPackages>
-    <androidPackage spec="com.google.android.play:integrity:1.4.0+" />
-    <androidPackage spec="androidx.lifecycle:lifecycle-process:2.1.0+" />
-    <androidPackage spec="com.google.android.gms:play-services-ads-identifier:16.0.0+" />
-    <androidPackage spec="com.google.android.gms:play-services-appset:16.0.0+" />
-    <androidPackage spec="org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.0+" />
-    <androidPackage spec="org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.21+" />
-    <androidPackage spec="org.jetbrains.kotlin:kotlin-stdlib:1.9.25+" />
-    <androidPackage spec="org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.21+" />
-    <androidPackage spec="org.jetbrains:annotations:13.0+" />
+    <androidPackage spec="com.google.android.play:integrity:1.4.0" />
+    <androidPackage spec="androidx.lifecycle:lifecycle-process:2.1.0" />
+    <androidPackage spec="com.google.android.gms:play-services-ads-identifier:16.0.0" />
+    <androidPackage spec="com.google.android.gms:play-services-appset:16.0.0" />
+    <androidPackage spec="org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0" />
+    <androidPackage spec="io.justtrack:integrity:1.0.1" />
+    <androidPackage spec="org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.21" />
+    <androidPackage spec="org.jetbrains.kotlin:kotlin-stdlib:1.9.25" />
+    <androidPackage spec="org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.21" />
+    <androidPackage spec="org.jetbrains:annotations:13.0" />
     <androidPackage spec="io.justtrack:adapter-applovin:2.0.0" />
     <androidPackage spec="io.justtrack:adapter-unityads:1.0.1" />
   </androidPackages>
   <iosPods>
-    <iosPod name="JustTrackSDKAppLovinAdapter" version="~> 1.0.0">
+    <iosPod name="JustTrackSDKAppLovinAdapter" version="~> 1.0.2">
       <sources></sources>
     </iosPod>
-    <iosPod name="JustTrackSDKUnityAdsAdapter" version="~> 1.0.0">
+    <iosPod name="JustTrackSDKUnityAdsAdapter" version="~> 1.0.1">
       <sources></sources>
     </iosPod>
   </iosPods>

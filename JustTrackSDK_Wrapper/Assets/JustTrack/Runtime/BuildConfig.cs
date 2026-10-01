@@ -8,17 +8,10 @@ namespace JustTrack
 #pragma warning disable SA1401 // Fields should be private
     internal class BuildConfig
     {
-#if UNITY_WEBGL
         /// <summary>
-        /// Gets the version number of the justtrack SDK for WebGL platform.
+        /// Gets the version number of the justtrack SDK.
         /// </summary>
-        internal static string SdkVersionWebGl = "1.0.0";
-#else
-        /// <summary>
-        /// Gets the version number of the justtrack SDK for native platforms (Android/iOS).
-        /// </summary>
-        internal static string SdkVersion = "7.1.0";
-#endif
+        internal static string SdkVersion = "8.0.0";
     }
 #pragma warning restore SA1401
 }

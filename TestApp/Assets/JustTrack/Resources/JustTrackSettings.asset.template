@@ -40,5 +40,4 @@ MonoBehaviour:
   androidDisableAutomaticInAppPurchaseTracking: 1
   androidFirebaseIntegration: 0
   iosFirebaseIntegration: 0
-  enableDebugMode: 0
   enableConsoleLogging: 0

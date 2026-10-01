@@ -9,8 +9,6 @@ tracking-sdk/
 local.properties
 
 **/JustTrackSettings.asset
-**/LocalCredentials.generated.cs
-**/LocalCredentials.generated.cs.meta
 **/TestAppCredentials.generated.cs
 **/TestAppCredentials.generated.cs.meta
 **/AppLovinSettings.asset
@@ -29,3 +27,6 @@ local.properties
 # test artifacts
 TestResults/
 CoverageResults/
+
+# Codegraph index
+.codegraph/

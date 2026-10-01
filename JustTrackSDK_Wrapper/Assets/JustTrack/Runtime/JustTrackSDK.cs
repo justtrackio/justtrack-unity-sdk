@@ -156,22 +156,24 @@ namespace JustTrack
         /// <param name="pTrackingProvider">Optional tracking provider.</param>
         /// <param name="pCustomUserId">Optional custom user ID.</param>
         /// <param name="pAutomaticInAppPurchaseTracking">Whether to enable automatic in-app purchase tracking.</param>
-        /// <param name="pEnableDebugMode">Whether to enable debug mode.</param>
         /// <param name="pManualStart">Whether to use manual start mode.</param>
         /// <param name="pEnableConsoleLogging">Whether to enable console logging.</param>
-        /// <param name="pOnSuccess">Callback invoked when initialization succeeds.</param>
-        /// <param name="pOnFailure">Callback invoked when initialization fails.</param>
+        /// <param name="pEnableConnectionTracking">Whether to enable connection tracking.</param>
+        /// <param name="pServerUrl">Optional custom server URL.</param>
+        /// <param name="pBundleId">Optional custom bundle ID.</param>
+        /// <param name="pApplicationVersion">Optional custom application version (version name and version code). Both values must be set together, or the whole object must be null.</param>
         public static void Init(
             string pApiKey,
             string? pTrackingId,
             string? pTrackingProvider,
             string? pCustomUserId,
             bool pAutomaticInAppPurchaseTracking,
-            bool pEnableDebugMode,
             bool pManualStart,
             bool pEnableConsoleLogging,
-            Action<AttributionResponse> pOnSuccess,
-            Action<string> pOnFailure)
+            bool pEnableConnectionTracking,
+            string? pServerUrl,
+            string? pBundleId,
+            ApplicationVersion? pApplicationVersion)
         {
             if (string.IsNullOrEmpty(pApiKey))
             {
@@ -191,23 +193,13 @@ namespace JustTrack
                     pTrackingProvider,
                     pCustomUserId,
                     pAutomaticInAppPurchaseTracking,
-                    pEnableDebugMode,
                     pManualStart,
                     pEnableConsoleLogging,
-                    (attribution) =>
-                    {
-                        if (pOnSuccess != null)
-                        {
-                            pOnSuccess(attribution);
-                        }
-                    },
-                    (error) =>
-                    {
-                        if (pOnFailure != null)
-                        {
-                            pOnFailure(error);
-                        }
-                    });
+                    pEnableConnectionTracking,
+                    pServerUrl,
+                    pBundleId,
+                    pApplicationVersion?.Version,
+                    pApplicationVersion?.VersionCode);
             }
 
             CheckAfterInit();
@@ -417,6 +409,39 @@ namespace JustTrack
         {
             WaitForInitialization(() => Agent.SetFirebaseAppInstanceId(pFirebaseAppInstanceId));
         }
+
+        /// <summary>
+        /// Sets the value for global dimension 0 (jt_global_0).
+        /// Global dimensions are automatically attached to all future events sent by the SDK.
+        /// They persist across sessions and app launches until explicitly cleared or the app is re-installed.
+        /// </summary>
+        /// <param name="value">The dimension value. Pass null to clear the dimension.</param>
+        public static void SetGlobalDimension0(string? value)
+        {
+            WaitForInitialization(() => Agent.SetGlobalDimension0(value));
+        }
+
+        /// <summary>
+        /// Sets the value for global dimension 1 (jt_global_1).
+        /// Global dimensions are automatically attached to all future events sent by the SDK.
+        /// They persist across sessions and app launches until explicitly cleared or the app is re-installed.
+        /// </summary>
+        /// <param name="value">The dimension value. Pass null to clear the dimension.</param>
+        public static void SetGlobalDimension1(string? value)
+        {
+            WaitForInitialization(() => Agent.SetGlobalDimension1(value));
+        }
+
+        /// <summary>
+        /// Sets the value for global dimension 2 (jt_global_2).
+        /// Global dimensions are automatically attached to all future events sent by the SDK.
+        /// They persist across sessions and app launches until explicitly cleared or the app is re-installed.
+        /// </summary>
+        /// <param name="value">The dimension value. Pass null to clear the dimension.</param>
+        public static void SetGlobalDimension2(string? value)
+        {
+            WaitForInitialization(() => Agent.SetGlobalDimension2(value));
+        }
 #endif
 
         /// <summary>
@@ -603,15 +628,6 @@ namespace JustTrack
             WaitForInitialization(() => Agent.GetAdvertiserIdInfo(pOnSuccess, pOnFailure));
         }
 
-        /// <summary>
-        /// Gets the test group ID.
-        /// </summary>
-        /// <param name="pOnSuccess">Callback for success.</param>
-        /// <param name="pOnFailure">Callback for failure.</param>
-        public static void GetTestGroupId(Action<int?> pOnSuccess, Action<string> pOnFailure)
-        {
-            WaitForInitialization(() => Agent.GetTestGroupId(pOnSuccess, pOnFailure));
-        }
 #endif
 
 #if UNITY_IOS
@@ -671,11 +687,7 @@ namespace JustTrack
         /// <returns>The SDK version string.</returns>
         public static string GetVersion()
         {
-#if UNITY_WEBGL
-            return BuildConfig.SdkVersionWebGl;
-#else
             return BuildConfig.SdkVersion;
-#endif
         }
 
 #if !UNITY_WEBGL
@@ -738,6 +750,16 @@ namespace JustTrack
             WaitForInitialization(() => Agent.ForwardTransaction(token, productId, money, productType));
         }
 #endif
+
+        /// <summary>
+        /// Gets the attribution response from the justtrack SDK.
+        /// </summary>
+        /// <param name="pOnSuccess">Callback invoked when attribution is successfully retrieved.</param>
+        /// <param name="pOnError">Callback invoked if an error occurs during attribution retrieval.</param>
+        public static void GetAttribution(Action<AttributionResponse> pOnSuccess, Action<string> pOnError)
+        {
+            WaitForInitialization(() => Agent.GetAttribution(pOnSuccess, pOnError));
+        }
 
         private JustTrackSDK()
         {

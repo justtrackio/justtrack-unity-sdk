@@ -98,6 +98,13 @@ namespace JustTrack
         public bool ManualStart;
 
         /// <summary>
+        /// Whether the SDK should be initialized via a runtime constructor instead of the settings UI.
+        /// When true, JustTrackSDKBehaviour will not auto-initialize the SDK.
+        /// </summary>
+        [SerializeField]
+        public bool UseRuntimeConstructor;
+
+        /// <summary>
         /// Whether to always update injected code during builds.
         /// </summary>
         [SerializeField]
@@ -301,18 +308,19 @@ namespace JustTrack
         public string ServerUrl = string.Empty;
 
         /// <summary>
-        /// Whether debug mode is enabled for the SDK.
-        /// </summary>
-        [SerializeField]
-        [FormerlySerializedAs("enableDebugMode")]
-        public bool EnableDebugMode;
-
-        /// <summary>
         /// Whether console logging is enabled for the SDK.
         /// </summary>
         [SerializeField]
         [FormerlySerializedAs("enableConsoleLogging")]
         public bool EnableConsoleLogging;
+
+        /// <summary>
+        /// Whether connection tracking is enabled for the SDK (Android only).
+        /// When enabled, the SDK attaches a connection type dimension to every tracked event.
+        /// </summary>
+        [SerializeField]
+        [FormerlySerializedAs("enableConnectionTracking")]
+        public bool EnableConnectionTracking;
 
         /// <summary>
         /// Loads JustTrack settings from Unity Resources.

@@ -67,30 +67,4 @@ namespace JustTrack
             }
         }
     }
-
-    /// <summary>
-    /// Internal utility class for converting IronSource ad format strings to AdUnit enum values.
-    /// </summary>
-    internal static class AdUnitFromIronsourceConversion
-    {
-        /// <summary>
-        /// Converts an IronSource ad format string to an AdUnit enum value.
-        /// </summary>
-        /// <param name="adFormat">The IronSource ad format string.</param>
-        /// <returns>The corresponding AdUnit enum value, or null if not found.</returns>
-        internal static AdUnit? ToAdUnit(string adFormat)
-        {
-            switch (adFormat)
-            {
-                case "banner":
-                    return AdUnit.Banner;
-                case "interstitial":
-                    return AdUnit.Interstitial;
-                case "rewarded_video":
-                    return AdUnit.Rewarded;
-            }
-
-            return null;
-        }
-    }
 }

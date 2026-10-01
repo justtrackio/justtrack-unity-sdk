@@ -54,15 +54,6 @@ public class PrivacyButtonController : MonoBehaviour
                 Log("GetInstallInstanceId: (Failure) " + error);
             });
 
-        JustTrackSDK.GetTestGroupId(
-            (testGroupId) =>
-            {
-                Log("GetTestGroupId: (Success) " + testGroupId);
-            },
-            (error) =>
-            {
-                Log("GetTestGroupId: (Failure) " + error);
-            });
         JustTrackSDK.GetRetargetingParameters(
             (retargetingParams) =>
             {
@@ -85,7 +76,7 @@ public class PrivacyButtonController : MonoBehaviour
                 Log("GetAdvertiserIdInfo: (Failure) " + error);
             });
 #endif
-        JustTrackSDKBehaviour.GetAttribution(
+        JustTrackSDK.GetAttribution(
             (attributionResponse) =>
             {
                 Log("GetAttribution: (Success)");

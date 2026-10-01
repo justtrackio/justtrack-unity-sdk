@@ -9,7 +9,7 @@ namespace JustTrack
     /// </summary>
     public class AttributionCampaign
     {
-        private AttributionCampaign(int pId, string pName, string pType)
+        private AttributionCampaign(string pId, string pName, string pType)
         {
             this.Id = pId;
             this.Name = pName;
@@ -19,7 +19,7 @@ namespace JustTrack
         /// <summary>
         /// Gets the ID of the campaign.
         /// </summary>
-        public int Id { get; private set; }
+        public string Id { get; private set; }
 
         /// <summary>
         /// Gets the name of the campaign.
@@ -34,19 +34,19 @@ namespace JustTrack
 #if UNITY_ANDROID
             internal static AttributionCampaign FromAndroidObject(AndroidJavaObject pCampaign) {
                 return new AttributionCampaign(
-                    pCampaign.Call<int>("getId"),
+                    pCampaign.Call<string>("getId"),
                     pCampaign.Call<string>("getName"),
                     pCampaign.Call<string>("getType")
                 );
             }
 #endif
 #if UNITY_IOS || UNITY_WEBGL
-            internal static AttributionCampaign CreateCampaign(int pId, string pName, string pType) {
+            internal static AttributionCampaign CreateCampaign(string pId, string pName, string pType) {
                 return new AttributionCampaign(pId, pName, pType);
             }
 #endif
 #if UNITY_EDITOR
-            internal static AttributionCampaign CreateFakeCampaign(int pId, string pName, string pType) {
+            internal static AttributionCampaign CreateFakeCampaign(string pId, string pName, string pType) {
                 return new AttributionCampaign(pId, pName, pType);
             }
 #endif

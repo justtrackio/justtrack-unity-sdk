@@ -7,7 +7,7 @@ public class SdkInfoSceneController : MonoBehaviour
     public TextMeshProUGUI sdkVersionText;
     public TextMeshProUGUI advertiserIdText;
     public TextMeshProUGUI installIdText;
-    public TextMeshProUGUI testGroupIdText;
+    public TextMeshProUGUI attributionListenerText;
 
     private void Start()
     {
@@ -28,13 +28,21 @@ public class SdkInfoSceneController : MonoBehaviour
         {
             installIdText.text = error;
         });
-        JustTrackSDK.GetTestGroupId((testGroupId) =>
-        {
-            testGroupIdText.text = $"{testGroupId}";
-        }, (error) =>
-        {
-            testGroupIdText.text = error;
-        });
 #endif
+        JustTrackSDK.OnAttributionResponse += OnAttributionResponse;
+        JustTrackSDK.GetAttribution(OnAttributionResponse, (error) =>
+        {
+            attributionListenerText.text = $"Error: {error}";
+        });
+    }
+
+    private void OnDestroy()
+    {
+        JustTrackSDK.OnAttributionResponse -= OnAttributionResponse;
+    }
+
+    private void OnAttributionResponse(AttributionResponse attribution)
+    {
+        attributionListenerText.text = $"UserType={attribution.UserType}, Campaign={attribution.Campaign.Name}, Channel={attribution.Channel.Name}";
     }
 }

@@ -176,5 +176,94 @@ namespace JustTrack.Tests.Editor
             Assert.AreNotEqual(androidMode, allMode);
             Assert.AreNotEqual(iosMode, allMode);
         }
+
+        [Test]
+        public void ValidateApplicationVersion_BothSet_NoError()
+        {
+            var errors = new List<string>();
+
+            JustTrackUtils.ValidateApplicationVersion("Android", "1.0.0", "1", errors);
+
+            Assert.AreEqual(0, errors.Count);
+        }
+
+        [Test]
+        public void ValidateApplicationVersion_BothEmpty_NoError()
+        {
+            var errors = new List<string>();
+
+            JustTrackUtils.ValidateApplicationVersion("Android", string.Empty, string.Empty, errors);
+            JustTrackUtils.ValidateApplicationVersion("iOS", null, null, errors);
+
+            Assert.AreEqual(0, errors.Count);
+        }
+
+        [Test]
+        public void ValidateApplicationVersion_OnlyVersion_AddsError()
+        {
+            var errors = new List<string>();
+
+            JustTrackUtils.ValidateApplicationVersion("Android", "1.0.0", string.Empty, errors);
+
+            Assert.AreEqual(1, errors.Count);
+        }
+
+        [Test]
+        public void ValidateApplicationVersion_OnlyVersionCode_AddsError()
+        {
+            var errors = new List<string>();
+
+            JustTrackUtils.ValidateApplicationVersion("iOS", null, "1", errors);
+
+            Assert.AreEqual(1, errors.Count);
+        }
+
+        private static JustTrackUtils.ValidationResult RunValidation(JustTrackSettings settings, JustTrackUtils.ValidationMode mode)
+        {
+            JustTrackUtils.ValidationResult result = default;
+            var steps = JustTrackUtils.ValidateAsync(settings, mode, r => result = r);
+            while (steps.MoveNext())
+            {
+                // drive the validation synchronously; empty tokens perform no network calls
+            }
+
+            return result;
+        }
+
+        [Test]
+        public void ValidateAsync_ValidateAndroid_MissingAndroidToken_AddsError()
+        {
+            var settings = UnityEngine.ScriptableObject.CreateInstance<JustTrackSettings>();
+            settings.AndroidApiToken = "";
+            settings.IosApiToken = "";
+
+            var result = RunValidation(settings, JustTrackUtils.ValidationMode.ValidateAndroid);
+
+            Assert.IsTrue(result.Errors.Exists(e => e.Contains("Android API token")));
+        }
+
+        [Test]
+        public void ValidateAsync_ValidateIOS_MissingIOSToken_AddsError()
+        {
+            var settings = UnityEngine.ScriptableObject.CreateInstance<JustTrackSettings>();
+            settings.AndroidApiToken = "";
+            settings.IosApiToken = "";
+
+            var result = RunValidation(settings, JustTrackUtils.ValidationMode.ValidateIOS);
+
+            Assert.IsTrue(result.Errors.Exists(e => e.Contains("iOS API token")));
+        }
+
+        [Test]
+        public void ValidateAsync_ValidateAll_MissingBothTokens_AddsNeitherError()
+        {
+            var settings = UnityEngine.ScriptableObject.CreateInstance<JustTrackSettings>();
+            settings.AndroidApiToken = "";
+            settings.IosApiToken = "";
+
+            var result = RunValidation(settings, JustTrackUtils.ValidationMode.ValidateAll);
+
+            Assert.IsTrue(result.Errors.Exists(e => e.Contains("Neither Android nor iOS")));
+        }
     }
 }

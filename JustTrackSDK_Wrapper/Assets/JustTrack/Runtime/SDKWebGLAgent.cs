@@ -34,7 +34,10 @@ namespace JustTrack
         private static extern void _justtrack_webgl_anonymize(string gameObjectName, string callbackMethodName);
 
         [DllImport("__Internal")]
-        private static extern void _justtrack_webgl_track_event(string eventName, string dimensionsJson, string valueJson, string gameObjectName, string callbackMethodName);
+        private static extern void _justtrack_webgl_track_event(string eventName, string dimensionsJson, string valueJson, string gameObjectName, string callbackMethodName, string callbackId);
+
+        [DllImport("__Internal")]
+        private static extern void _justtrack_webgl_get_attribution(string gameObjectName, string callbackMethodName);
 #pragma warning restore SA1309
 
 #pragma warning disable SA1401, SA1307 // Fields should be private; field names should begin with upper-case letter (required for JSON serialization)
@@ -42,7 +45,6 @@ namespace JustTrack
         public class WebGLAttributionResponse
         {
             public string userType = "";
-            public string type = "";
             public string campaignId = "";
             public string campaignName = "";
             public string campaignType = "";
@@ -65,10 +67,15 @@ namespace JustTrack
             public string? data = null;
             public string? error = null;
         }
+
+        [Serializable]
+        private class WebGLEventCallbackEnvelope
+        {
+            public string callbackId = "";
+            public WebGLCallbackResponse response = new WebGLCallbackResponse();
+        }
 #pragma warning restore SA1401, SA1307
 
-        private Action<AttributionResponse>? initSuccessCallback = null;
-        private Action<string>? initFailureCallback = null;
         private Action? anonymizeSuccessCallback = null;
         private Action<string>? anonymizeFailureCallback = null;
         private Action<AttributionResponse>? attributionListenerCallback = null;
@@ -82,19 +89,18 @@ namespace JustTrack
             string? pTrackingProvider,
             string? pCustomUserId,
             bool pAutomaticInAppPurchaseTracking,
-            bool pEnableDebugMode,
             bool pManualStart,
             bool pEnableConsoleLogging,
-            Action<AttributionResponse> pOnSuccess,
-            Action<string> pOnFailure)
+            bool pEnableConnectionTracking,
+            string? pServerUrl,
+            string? pBundleId,
+            string? pAppVersion,
+            string? pAppCode)
         {
-            initSuccessCallback = pOnSuccess;
-            initFailureCallback = pOnFailure;
-
             var settings = JustTrackSettings.LoadFromResources();
-            string bundleId = !string.IsNullOrEmpty(settings?.WebglBundleId) ? settings.WebglBundleId : Application.identifier;
-            string appVersion = !string.IsNullOrEmpty(settings?.WebglAppVersion) ? settings.WebglAppVersion : Application.version;
-            string appCode = !string.IsNullOrEmpty(settings?.WebglAppCode) ? settings.WebglAppCode : appVersion;
+            string bundleId = !string.IsNullOrEmpty(pBundleId) ? pBundleId : (!string.IsNullOrEmpty(settings?.WebglBundleId) ? settings.WebglBundleId : Application.identifier);
+            string appVersion = !string.IsNullOrEmpty(pAppVersion) ? pAppVersion : (!string.IsNullOrEmpty(settings?.WebglAppVersion) ? settings.WebglAppVersion : Application.version);
+            string appCode = !string.IsNullOrEmpty(pAppCode) ? pAppCode : (!string.IsNullOrEmpty(settings?.WebglAppCode) ? settings.WebglAppCode : appVersion);
             string userId = !string.IsNullOrEmpty(settings?.WebglUserId) ? settings.WebglUserId : (pCustomUserId ?? "");
 
             try
@@ -115,14 +121,26 @@ namespace JustTrack
             }
             catch (Exception e)
             {
-                JustTrackSDKBehaviour.CallOnMainThread(() =>
-                {
-                    pOnFailure(e.Message);
-                });
+                UnityEngine.Debug.LogError($"[justtrack WebGL] Initialization error: {e.Message}");
             }
         }
 
         public void OnWebGLInitCallback(string responseJson)
+        {
+            // Init callback no longer carries attribution data
+        }
+
+        private Action<AttributionResponse>? getAttributionSuccess = null;
+        private Action<string>? getAttributionFailure = null;
+
+        public void GetAttribution(Action<AttributionResponse> pOnSuccess, Action<string> pOnFailure)
+        {
+            getAttributionSuccess = pOnSuccess;
+            getAttributionFailure = pOnFailure;
+            _justtrack_webgl_get_attribution("JustTrackSDKBehaviour", "OnWebGLGetAttributionCallback");
+        }
+
+        public void OnWebGLGetAttributionCallback(string responseJson)
         {
             try
             {
@@ -133,14 +151,15 @@ namespace JustTrack
                     var attribution = ParseAttributionResponse(response.data);
                     JustTrackSDKBehaviour.CallOnMainThread(() =>
                     {
-                        initSuccessCallback?.Invoke(attribution);
+                        getAttributionSuccess?.Invoke(attribution);
                     });
                 }
                 else
                 {
+                    var errorMsg = response.error ?? "Unknown attribution error";
                     JustTrackSDKBehaviour.CallOnMainThread(() =>
                     {
-                        initFailureCallback?.Invoke(response.error ?? "Unknown initialization error");
+                        getAttributionFailure?.Invoke(errorMsg);
                     });
                 }
             }
@@ -148,7 +167,7 @@ namespace JustTrack
             {
                 JustTrackSDKBehaviour.CallOnMainThread(() =>
                 {
-                    initFailureCallback?.Invoke(e.Message);
+                    getAttributionFailure?.Invoke(e.Message);
                 });
             }
         }
@@ -157,10 +176,6 @@ namespace JustTrack
         {
             WebGLAttributionResponse parsed = JsonUtility.FromJson<WebGLAttributionResponse>(attributionJson);
 
-            if (!int.TryParse(parsed.campaignId, out int campaignId))
-            {
-                campaignId = 0;
-            }
             if (!int.TryParse(parsed.channelId, out int channelId))
             {
                 channelId = 0;
@@ -178,8 +193,7 @@ namespace JustTrack
 
             return AttributionResponse.CreateResponse(
                 parsed.userType,
-                parsed.type,
-                campaignId,
+                parsed.campaignId,
                 parsed.campaignName,
                 parsed.campaignType,
                 channelId,
@@ -330,7 +344,8 @@ namespace JustTrack
                     });
                 }
 
-                string callbackId = Guid.NewGuid().ToString();
+                bool hasCallbacks = pOnSuccess != null || pOnFailure != null;
+                string callbackId = hasCallbacks ? Guid.NewGuid().ToString() : "";
                 if (pOnSuccess != null)
                 {
                     eventSuccessCallbacks[callbackId] = pOnSuccess;
@@ -340,16 +355,15 @@ namespace JustTrack
                     eventFailureCallbacks[callbackId] = pOnFailure;
                 }
 
-                string callbackMethodName = pOnSuccess != null || pOnFailure != null
-                    ? $"OnWebGLEventCallback_{callbackId}"
-                    : "";
+                string callbackMethodName = hasCallbacks ? "OnWebGLEventCallback" : "";
 
                 _justtrack_webgl_track_event(
                     pEvent.Name,
                     dimensionsJson,
                     valueJson,
                     "JustTrackSDKBehaviour",
-                    callbackMethodName
+                    callbackMethodName,
+                    callbackId
                 );
             }
             catch (Exception e)
@@ -388,18 +402,17 @@ namespace JustTrack
 
         public void OnWebGLEventCallback(string callbackData)
         {
-            string[] parts = callbackData.Split(new[] { '|' }, 2);
-            if (parts.Length != 2)
-            {
-                return;
-            }
-
-            string callbackId = parts[0];
-            string responseJson = parts[1];
-
+            string callbackId = "";
             try
             {
-                WebGLCallbackResponse response = JsonUtility.FromJson<WebGLCallbackResponse>(responseJson);
+                WebGLEventCallbackEnvelope envelope = JsonUtility.FromJson<WebGLEventCallbackEnvelope>(callbackData);
+                callbackId = envelope.callbackId;
+                WebGLCallbackResponse response = envelope.response;
+
+                if (string.IsNullOrEmpty(callbackId) || response == null)
+                {
+                    return;
+                }
 
                 if (response.success)
                 {
@@ -409,7 +422,6 @@ namespace JustTrack
                         {
                             successCallback?.Invoke();
                         });
-                        eventSuccessCallbacks.Remove(callbackId);
                     }
                 }
                 else
@@ -420,18 +432,25 @@ namespace JustTrack
                         {
                             failureCallback?.Invoke(response.error ?? "Unknown event tracking error");
                         });
-                        eventFailureCallbacks.Remove(callbackId);
                     }
                 }
+
+                eventSuccessCallbacks.Remove(callbackId);
+                eventFailureCallbacks.Remove(callbackId);
             }
             catch (Exception e)
             {
-                if (eventFailureCallbacks.TryGetValue(callbackId, out var failureCallback))
+                if (!string.IsNullOrEmpty(callbackId) && eventFailureCallbacks.TryGetValue(callbackId, out var failureCallback))
                 {
                     JustTrackSDKBehaviour.CallOnMainThread(() =>
                     {
                         failureCallback?.Invoke(e.Message);
                     });
+                }
+
+                if (!string.IsNullOrEmpty(callbackId))
+                {
+                    eventSuccessCallbacks.Remove(callbackId);
                     eventFailureCallbacks.Remove(callbackId);
                 }
             }

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using Unity.Plastic.Newtonsoft.Json;
+using Newtonsoft.Json;
 using UnityEditor;
 using UnityEngine;
 
@@ -347,22 +347,13 @@ namespace JustTrackInjected {
 
             foreach (var dependency in JustTrackDependencyDefinition.Dependencies)
             {
-                var package = $"{dependency.GroupId}:{dependency.ArtifactId}:";
-
-                if (hasGradleTemplate)
-                {
-                    package += $"[{dependency.Version},{dependency.UpperBoundVersion ?? string.Empty})";
-                }
-                else
-                {
-                    package += $"{dependency.Version}+";
-                }
+                var package = $"{dependency.GroupId}:{dependency.ArtifactId}:{dependency.Version}";
 
                 xmlBuilder.AppendLine($"    <androidPackage spec=\"{package}\" />");
             }
 
             // resolve integrations adapters for Android
-            if (settings != null && !string.IsNullOrEmpty(settings.AndroidApiToken))
+            if (settings != null)
             {
                 if (settings.AndroidAppLovinIntegration)
                 {
@@ -410,7 +401,7 @@ namespace JustTrackInjected {
             // resolve iOS deps
             xmlBuilder.AppendLine("  <iosPods>");
 
-            if (settings != null && !string.IsNullOrEmpty(settings.IosApiToken))
+            if (settings != null)
             {
                 if (settings.IosAppLovinIntegration)
                 {

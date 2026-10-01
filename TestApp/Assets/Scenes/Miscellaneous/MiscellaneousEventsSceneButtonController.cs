@@ -145,6 +145,8 @@ public class MiscellaneousEventsButtonController : MonoBehaviour
         JustTrackSDK.Track(new JtResourceEvent("test-pJtAction", 1.0, "test-pJtItemType", "test-pJtItemName", "test-pJtItemId"));
         JustTrackSDK.Track(new JtPurchaseEvent("test-pJtAction", "test-pJtProductId", "test-pJtProductType", "test-pJtToken"));
         JustTrackSDK.Track(new JtPurchaseEvent("test-pJtAction", "test-pJtProductId", "test-pJtProductType", 1.0, "test-pJtToken"));
+        JustTrackSDK.Track(new JtPurchaseEvent(JtPurchaseEvent.Action.VIEW, "test-pJtProductId", "test-pJtProductType", "test-pJtToken"));
+        JustTrackSDK.Track(new JtPurchaseEvent(JtPurchaseEvent.Action.CLICK, "test-pJtProductId", "test-pJtProductType", 1.0, "test-pJtToken"));
         JustTrackSDK.Track(new JtAdEvent("test-pJtAction", "test-pJtAdBundleId", "test-pJtAdInstanceName", "test-pJtAdNetwork", "test-pJtAdPlacement", "test-pJtAdSdk", "test-pJtAdSegment", "test-pJtAdUnit", "test-pJtAdTestGroup"));
         JustTrackSDK.Track(new JtAdEvent("test-pJtAction", 1.0, TimeUnitGroup.Milliseconds, "test-pJtAdBundleId", "test-pJtAdInstanceName", "test-pJtAdNetwork", "test-pJtAdPlacement", "test-pJtAdSdk", "test-pJtAdSegment", "test-pJtAdUnit", "test-pJtAdTestGroup"));
         JustTrackSDK.Track(new JtLoginEvent("test-pJtAction", "test-pJtMethod"));

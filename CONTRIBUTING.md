@@ -12,6 +12,8 @@ Thank you for your interest in contributing to the justtrack SDK. This document 
   - `Assets/JustTrack/Prefabs/` - Pre-configured SDK prefab
   - `Assets/_Tests/` - Unit tests (Editor and Runtime)
 - `TestApp/` - Example/demo application with full SDK integration
+- `browser-sdk/` - Browser/WebGL SDK (git submodule)
+- `tracking-sdk/` - Native iOS/Android SDK (git submodule)
 - `tools/` - Build tools (dependency and adapter version generation)
 - `scripts/` - Helper scripts (linting, testing, credentials)
 
