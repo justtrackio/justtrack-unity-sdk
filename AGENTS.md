@@ -1,30 +1,10 @@
-## overview
+# justtrack Unity SDK
 
-This is a Unity SDK wrapper for the JustTrack SDK by justtrack GmbH.
+`JustTrackSDK_Wrapper/` is the Unity project for the published package `io.justtrack.justtrack-unity-sdk`. `TestApp/` is a demo integration that needs local setup this repo leaves out; test package changes in `JustTrackSDK_Wrapper/`.
 
-## sources
+After changing package code, run the EditMode tests.
 
-- `JustTrackSDK_Wrapper/` - Main Unity SDK project (published as Unity package `io.justtrack.justtrack-unity-sdk`)
-- `TestApp/` - Example/demo application with full SDK integration
-- `browser-sdk/` - Browser/WebGL SDK (git submodule)
-- `tracking-sdk/` - Native iOS/Android SDK (git submodule)
-- `tools/` - Build tools for dependency and adapter version generation
-- `scripts/` - Helper scripts (linting, testing, credentials)
-
-## tools
-
-- `dotnet format analyzers JustTrackSDK_Wrapper/JustTrackSDK.csproj` - runs StyleCop analyzers on the SDK code
-- `sh scripts/lint.sh` - runs linter (dotnet format with SA1600 check)
-- `sh scripts/run-editor-tests.sh` - runs Editor (Edit Mode) unit tests from CLI
-- `sh scripts/run-editor-tests.sh --coverage` - runs Editor unit tests with code coverage report
-- `sh scripts/generateCredentials.sh` - generates credential files from `local.properties`
-- `./updateCode.sh` - checks out submodules, builds browser SDK, updates versions and dependencies
-
-## commands
-
-- `sh scripts/lint.sh` - runs linter
-- `sh scripts/run-editor-tests.sh --coverage` - runs Editor unit tests with code coverage report
-
-## instructions
-
-- always check code with linter, formatting and tests after you're done
+- Package source: `JustTrackSDK_Wrapper/Assets/JustTrack/` holds `Runtime/`, `Editor/`, `Plugins/iOS/`, `Plugins/WebGL/`, `package.json` and `CHANGELOG.md`.
+- Tests: `JustTrackSDK_Wrapper/Assets/_Tests/` (`Editor/`, `PlayMode/`). From the repository root, run the EditMode suite with the Unity Editor version in `JustTrackSDK_Wrapper/ProjectSettings/ProjectVersion.txt`, replacing `<Unity>` with that Editor's executable path (quoted or invoked as your shell requires):
+  `<Unity> -batchmode -projectPath JustTrackSDK_Wrapper -runTests -testPlatform EditMode -testResults TestResults/editor-results.xml`
+- Style: StyleCop rules come from `JustTrackSDK_Wrapper/stylecop.json` and `JustTrackSDK_Wrapper/.editorconfig`; public members need XML documentation (SA1600). The repo ships no lint project, so follow these rules by hand.
